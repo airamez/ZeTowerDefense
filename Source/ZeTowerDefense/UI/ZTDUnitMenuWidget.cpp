@@ -164,6 +164,7 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (HPText)
 	{
 		HPText->SetText(FText::FromString(FString::Printf(TEXT("HP: %.0f"), TargetUnit->CurrentHP)));
+		UE_LOG(LogTemp, Warning, TEXT("RefreshStats - Setting HP text to: %.0f"), TargetUnit->CurrentHP);
 	}
 
 	int32 HPCost = TargetUnit->GetHPUpgradeCost();
@@ -174,6 +175,7 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (HPCostText)
 	{
 		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), HPCost)));
+		UE_LOG(LogTemp, Warning, TEXT("RefreshStats - Setting HP cost to: %d"), HPCost);
 	}
 	if (FireRateCostText)
 	{
@@ -205,9 +207,50 @@ void UZTDUnitMenuWidget::RefreshStats()
 	{
 		UpgradeRangeButton->SetIsEnabled(PlayerPoints >= RangeCost);
 	}
-	if (UpgradeHPButton)
+
+	// UI will update automatically on next tick
+}
+
+void UZTDUnitMenuWidget::OnUpgradeHPClicked()
+{
+	if (!TargetUnit) return;
+
+	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GM) return;
+
+	int32 Cost = TargetUnit->GetHPUpgradeCost();
+	int32 PointsBefore = GM->PlayerPoints;
+	float HPBefore = TargetUnit->CurrentHP;
+	
+	// Debug output
+	UE_LOG(LogTemp, Warning, TEXT("HP Upgrade - Before: Points=%d, HP=%.0f, Cost=%d"), PointsBefore, HPBefore, Cost);
+	
+	if (GM->PlayerPoints >= Cost && TargetUnit->UpgradeHP(GM->PlayerPoints))
 	{
-		UpgradeHPButton->SetIsEnabled(PlayerPoints >= HPCost);
+		// Broadcast points change immediately
+		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
+		
+		// Debug output after upgrade
+		UE_LOG(LogTemp, Warning, TEXT("HP Upgrade - After: Points=%d, HP=%.0f"), GM->PlayerPoints, TargetUnit->CurrentHP);
+		
+		// Get player controller to close and reopen menu
+		AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
+		if (PC)
+		{
+			// Close menu briefly
+			PC->HideUnitMenu();
+			
+			// Reopen menu after one frame with updated unit
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this, PC]()
+			{
+				PC->ShowUnitMenu(TargetUnit);
+			});
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HP Upgrade Failed"));
 	}
 }
 
@@ -218,10 +261,21 @@ void UZTDUnitMenuWidget::OnUpgradeFireRateClicked()
 	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GM) return;
 
-	if (TargetUnit->UpgradeFireRate(GM->PlayerPoints))
+	int32 Cost = TargetUnit->GetFireRateUpgradeCost();
+	if (GM->PlayerPoints >= Cost && TargetUnit->UpgradeFireRate(GM->PlayerPoints))
 	{
 		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
-		RefreshStats();
+		
+		AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
+		if (PC)
+		{
+			PC->HideUnitMenu();
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this, PC]()
+			{
+				PC->ShowUnitMenu(TargetUnit);
+			});
+		}
 	}
 }
 
@@ -232,24 +286,21 @@ void UZTDUnitMenuWidget::OnUpgradePowerClicked()
 	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GM) return;
 
-	if (TargetUnit->UpgradePower(GM->PlayerPoints))
+	int32 Cost = TargetUnit->GetPowerUpgradeCost();
+	if (GM->PlayerPoints >= Cost && TargetUnit->UpgradePower(GM->PlayerPoints))
 	{
 		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
-		RefreshStats();
-	}
-}
-
-void UZTDUnitMenuWidget::OnUpgradeHPClicked()
-{
-	if (!TargetUnit) return;
-
-	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GM) return;
-
-	if (TargetUnit->UpgradeHP(GM->PlayerPoints))
-	{
-		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
-		RefreshStats();
+		
+		AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
+		if (PC)
+		{
+			PC->HideUnitMenu();
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this, PC]()
+			{
+				PC->ShowUnitMenu(TargetUnit);
+			});
+		}
 	}
 }
 
@@ -260,9 +311,21 @@ void UZTDUnitMenuWidget::OnUpgradeRangeClicked()
 	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GM) return;
 
-	if (TargetUnit->UpgradeRange(GM->PlayerPoints))
+	int32 Cost = TargetUnit->GetRangeUpgradeCost();
+	if (GM->PlayerPoints >= Cost && TargetUnit->UpgradeRange(GM->PlayerPoints))
 	{
-		RefreshStats();
+		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
+		
+		AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
+		if (PC)
+		{
+			PC->HideUnitMenu();
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimerForNextTick([this, PC]()
+			{
+				PC->ShowUnitMenu(TargetUnit);
+			});
+		}
 	}
 }
 
