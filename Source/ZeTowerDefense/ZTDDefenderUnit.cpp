@@ -122,7 +122,9 @@ int32 AZTDDefenderUnit::Fibonacci(int32 N) const
 
 int32 AZTDDefenderUnit::GetUpgradeCost(int32 CurrentLevel) const
 {
-	return Fibonacci(CurrentLevel);
+	// Doubling cost system: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512...
+	if (CurrentLevel <= 0) return 1;
+	return FMath::RoundToInt(FMath::Pow(2.0f, CurrentLevel));
 }
 
 bool AZTDDefenderUnit::UpgradeSpeed(int32& PlayerPoints)

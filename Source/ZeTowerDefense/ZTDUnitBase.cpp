@@ -107,6 +107,7 @@ void AZTDUnitBase::FireAtTarget(AActor* Target)
 		{
 			Projectile->SetActorScale3D(ProjectileScale);
 			Projectile->Initialize(Target, Power, ProjectileSpeed);
+			AddProjectile(Projectile); // Track this projectile
 		}
 	}
 	else
@@ -133,6 +134,9 @@ void AZTDUnitBase::HandleDeath()
 {
 	bIsDead = true;
 	OnUnitDestroyed.Broadcast(this);
+
+	// Clear all active projectiles when this unit dies
+	ClearProjectiles();
 
 	// Spawn explosion effect if configured
 	if (ExplosionConfig.NiagaraSystem || ExplosionConfig.ParticleSystem || ExplosionConfig.ExplosionSound)
@@ -171,4 +175,24 @@ void AZTDUnitBase::TestNiagaraSystems()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load Explosion_01_LOD_2"));
 	}
+}
+
+void AZTDUnitBase::AddProjectile(AZTDProjectile* Projectile)
+{
+	if (Projectile && !ActiveProjectiles.Contains(Projectile))
+	{
+		ActiveProjectiles.Add(Projectile);
+	}
+}
+
+void AZTDUnitBase::ClearProjectiles()
+{
+	for (AZTDProjectile* Projectile : ActiveProjectiles)
+	{
+		if (Projectile && IsValid(Projectile))
+		{
+			Projectile->Destroy();
+		}
+	}
+	ActiveProjectiles.Empty();
 }

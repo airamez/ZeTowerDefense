@@ -158,9 +158,42 @@ void AZTDPlayerController::HandleLeftClick()
 	// If build menu is open, don't process clicks on world
 	if (bIsBuildMenuOpen) return;
 
-	// Try to select a defending unit
+	// Try to select a defending unit with more forgiving click detection
 	FHitResult HitResult;
+	
+	// First try line trace for precision
 	GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, HitResult);
+
+	// If line trace didn't hit a defender, try sphere trace for nearby units
+	if (!HitResult.bBlockingHit || !Cast<AZTDDefenderUnit>(HitResult.GetActor()))
+	{
+		// Get cursor world position
+		FVector CursorWorldLocation, CursorWorldDirection;
+		DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+		
+		// Sphere trace around cursor position (100 units radius)
+		FVector TraceStart = CursorWorldLocation;
+		FVector TraceEnd = CursorWorldLocation + CursorWorldDirection * 1000.0f;
+		
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this);
+		
+		FHitResult SphereHitResult;
+		bool bHit = GetWorld()->SweepSingleByChannel(
+			SphereHitResult,
+			TraceStart,
+			TraceEnd,
+			FQuat::Identity,
+			ECollisionChannel::ECC_Visibility, // Use ECollisionChannel directly
+			FCollisionShape::MakeSphere(200.0f), // 200 units radius for more forgiving detection
+			QueryParams
+		);
+		
+		if (bHit)
+		{
+			HitResult = SphereHitResult;
+		}
+	}
 
 	if (HitResult.bBlockingHit)
 	{

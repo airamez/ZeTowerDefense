@@ -95,6 +95,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	FVector ProjectileSpawnOffset = FVector(100.0f, 0.0f, 20.0f);
 
+	// --- Projectile Tracking ---
+	UPROPERTY()
+	TArray<AZTDProjectile*> ActiveProjectiles;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void AddProjectile(AZTDProjectile* Projectile);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ClearProjectiles();
+
 	// --- Death Effects ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	FZTDExplosionConfig ExplosionConfig;

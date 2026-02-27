@@ -34,13 +34,10 @@ void AZTDProjectile::Tick(float DeltaTime)
 		return;
 	}
 
-	// If target is gone, keep flying forward and destroy
+	// If target is gone, destroy projectile immediately
 	if (!Target || !IsValid(Target))
 	{
-		FVector Forward = GetActorForwardVector();
-		SetActorLocation(GetActorLocation() + Forward * Speed * DeltaTime);
-
-		LifeTimer += DeltaTime * 5.0f; // expire faster if no target
+		Destroy(); // Destroy immediately when target is lost
 		return;
 	}
 

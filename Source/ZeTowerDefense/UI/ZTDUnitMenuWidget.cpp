@@ -24,108 +24,97 @@ void UZTDUnitMenuWidget::NativeConstruct()
 	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("Canvas"));
 	WidgetTree->RootWidget = Canvas;
 
-	// Background border on right side
+	// Background border centered (same as build menu)
 	UBorder* Border = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("Border"));
 	Border->SetBrushColor(FLinearColor(0.05f, 0.05f, 0.05f, 0.85f));
 	Border->SetPadding(FMargin(10.0f));
 	Canvas->AddChild(Border);
 	if (UCanvasPanelSlot* PSlot = Cast<UCanvasPanelSlot>(Border->Slot))
 	{
-		PSlot->SetAnchors(FAnchors(1.0f, 0.5f, 1.0f, 0.5f));
-		PSlot->SetAlignment(FVector2D(1.0f, 0.5f));
-		PSlot->SetSize(FVector2D(280.0f, 350.0f));
-		PSlot->SetPosition(FVector2D(-10.0f, 0.0f));
+		PSlot->SetAnchors(FAnchors(0.5f, 0.5f, 0.5f, 0.5f)); // Centered like build menu
+		PSlot->SetAlignment(FVector2D(0.5f, 0.5f));
+		PSlot->SetSize(FVector2D(450.0f, 400.0f)); // Wider for stat + button layout
+		PSlot->SetPosition(FVector2D(0.0f, 0.0f));
 	}
 
 	UVerticalBox* VBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("VBox"));
 	Border->SetContent(VBox);
 
-	// Unit name
-	UnitNameText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("UnitName"));
-	UnitNameText->SetText(FText::FromString(TEXT("Unit")));
-	UnitNameText->SetColorAndOpacity(FSlateColor(FLinearColor::Yellow));
-	VBox->AddChild(UnitNameText);
-
-	// HP text
-	HPText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HP"));
-	HPText->SetText(FText::FromString(TEXT("HP: --")));
-	HPText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-	VBox->AddChild(HPText);
-
-	// Helper: create stat row with text + cost + upgrade button
-	auto MakeStatRow = [&](const FString& Name, UTextBlock*& StatText, UTextBlock*& CostText, UButton*& UpgradeBtn)
+	// Helper lambda-style: create a button with text inside VBox (same as build menu)
+	auto MakeButton = [&](const FString& Name, const FString& Label) -> UButton*
 	{
-		UHorizontalBox* Row = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), *(Name + TEXT("Row")));
+		UButton* Btn = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), *Name);
+		VBox->AddChild(Btn);
+		if (UVerticalBoxSlot* BSlot = Cast<UVerticalBoxSlot>(Btn->Slot))
+		{
+			BSlot->SetPadding(FMargin(2.0f));
+			// Set fixed width for all buttons
+			BSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+		}
+		UTextBlock* Txt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(Name + TEXT("_Text")));
+		Txt->SetText(FText::FromString(Label));
+		Txt->SetJustification(ETextJustify::Center);
+		Btn->AddChild(Txt);
+		return Btn;
+	};
+
+	// Helper lambda-style: create a stat row with label and upgrade button on same line
+	auto MakeStatRow = [&](const FString& StatName, UTextBlock*& StatText, UTextBlock*& CostText, UButton*& UpgradeBtn)
+	{
+		// Stat row container
+		UHorizontalBox* Row = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), *(StatName + TEXT("Row")));
 		VBox->AddChild(Row);
 		if (UVerticalBoxSlot* RSlot = Cast<UVerticalBoxSlot>(Row->Slot))
 		{
 			RSlot->SetPadding(FMargin(0.0f, 2.0f));
 		}
 
-		StatText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(Name + TEXT("Stat")));
-		StatText->SetText(FText::FromString(Name + TEXT(": --")));
+		// Stat text (left side)
+		StatText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(StatName + TEXT("Text")));
 		StatText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 		Row->AddChild(StatText);
 		if (UHorizontalBoxSlot* HSlot = Cast<UHorizontalBoxSlot>(StatText->Slot))
 		{
-			HSlot->SetSize(ESlateSizeRule::Fill);
+			HSlot->SetSize(ESlateSizeRule::Fill); // Take available space
+			HSlot->SetHorizontalAlignment(HAlign_Left);
 		}
 
-		UpgradeBtn = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), *(Name + TEXT("Btn")));
+		// Upgrade button (right side)
+		UpgradeBtn = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), *(StatName + TEXT("Btn")));
 		Row->AddChild(UpgradeBtn);
+		if (UHorizontalBoxSlot* BtnSlot = Cast<UHorizontalBoxSlot>(UpgradeBtn->Slot))
+		{
+			BtnSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic)); // Auto size based on content
+		}
 
-		CostText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(Name + TEXT("Cost")));
-		CostText->SetText(FText::FromString(TEXT("Up (0)")));
+		// Cost text inside button
+		CostText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(StatName + TEXT("Cost")));
 		CostText->SetJustification(ETextJustify::Center);
+		CostText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 		UpgradeBtn->AddChild(CostText);
 	};
 
-	MakeStatRow(TEXT("Speed"), SpeedText, SpeedCostText, UpgradeSpeedButton);
+	// Unit name
+	UnitNameText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("UnitName"));
+	UnitNameText->SetText(FText::FromString(TEXT("Unit")));
+	UnitNameText->SetColorAndOpacity(FSlateColor(FLinearColor::Yellow));
+	UnitNameText->SetJustification(ETextJustify::Center);
+	VBox->AddChild(UnitNameText);
+
+	// Stat rows with upgrade buttons (no Speed upgrade for static defenders)
+	MakeStatRow(TEXT("HP"), HPText, HPCostText, UpgradeHPButton);
 	MakeStatRow(TEXT("FireRate"), FireRateText, FireRateCostText, UpgradeFireRateButton);
 	MakeStatRow(TEXT("Power"), PowerText, PowerCostText, UpgradePowerButton);
-	
-	// HP upgrade row (no stat text display, just upgrade button)
-	UHorizontalBox* HPRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("HPRow"));
-	VBox->AddChild(HPRow);
-	if (UVerticalBoxSlot* RSlot = Cast<UVerticalBoxSlot>(HPRow->Slot))
-	{
-		RSlot->SetPadding(FMargin(0.0f, 2.0f));
-	}
-
-	UTextBlock* HPLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HPLabel"));
-	HPLabel->SetText(FText::FromString(TEXT("HP: --")));
-	HPLabel->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-	HPRow->AddChild(HPLabel);
-	if (UHorizontalBoxSlot* HSlot = Cast<UHorizontalBoxSlot>(HPLabel->Slot))
-	{
-		HSlot->SetSize(ESlateSizeRule::Fill);
-	}
-
-	UpgradeHPButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("HPBtn"));
-	HPRow->AddChild(UpgradeHPButton);
-
-	HPCostText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HPCost"));
-	HPCostText->SetText(FText::FromString(TEXT("Up (0)")));
-	HPCostText->SetJustification(ETextJustify::Center);
-	UpgradeHPButton->AddChild(HPCostText);
+	MakeStatRow(TEXT("Range"), RangeText, RangeCostText, UpgradeRangeButton);
 
 	// Close button
-	CloseButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("CloseBtn"));
-	VBox->AddChild(CloseButton);
-	if (UVerticalBoxSlot* CSlot = Cast<UVerticalBoxSlot>(CloseButton->Slot))
-	{
-		CSlot->SetPadding(FMargin(0.0f, 8.0f, 0.0f, 0.0f));
-	}
-	UTextBlock* CloseTxt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("CloseTxt"));
-	CloseTxt->SetText(FText::FromString(TEXT("Close")));
-	CloseTxt->SetJustification(ETextJustify::Center);
-	CloseButton->AddChild(CloseTxt);
+	CloseButton = MakeButton(TEXT("Close"), TEXT("Close"));
 
-	// Bind events
-	UpgradeSpeedButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeSpeedClicked);
+	// Bind events (no Speed upgrade for static defenders)
+	UpgradeHPButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeHPClicked);
 	UpgradeFireRateButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeFireRateClicked);
 	UpgradePowerButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradePowerClicked);
-	UpgradeHPButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeHPClicked);
+	UpgradeRangeButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeRangeClicked);
 	CloseButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnCloseClicked);
 }
 
@@ -144,12 +133,17 @@ void UZTDUnitMenuWidget::RefreshStats()
 
 	if (UnitNameText)
 	{
-		UnitNameText->SetText(FText::FromString(TargetUnit->GetName()));
-	}
-
-	if (SpeedText)
-	{
-		SpeedText->SetText(FText::FromString(FString::Printf(TEXT("Speed: %.1f (Lv %d)"), TargetUnit->Speed, TargetUnit->SpeedLevel)));
+		// Extract clean unit name from blueprint class name
+		FString UnitName = TargetUnit->GetName();
+		if (UnitName.Contains(TEXT("Heli")))
+		{
+			UnitName = TEXT("Helicopter");
+		}
+		else if (UnitName.Contains(TEXT("Tank")))
+		{
+			UnitName = TEXT("Tank");
+		}
+		UnitNameText->SetText(FText::FromString(UnitName));
 	}
 
 	if (FireRateText)
@@ -162,37 +156,42 @@ void UZTDUnitMenuWidget::RefreshStats()
 		PowerText->SetText(FText::FromString(FString::Printf(TEXT("Power: %.1f (Lv %d)"), TargetUnit->Power, TargetUnit->PowerLevel)));
 	}
 
+	if (RangeText)
+	{
+		RangeText->SetText(FText::FromString(FString::Printf(TEXT("Range: %.0f (Lv %d)"), TargetUnit->AttackRange, TargetUnit->RangeLevel)));
+	}
+
 	if (HPText)
 	{
 		HPText->SetText(FText::FromString(FString::Printf(TEXT("HP: %.0f"), TargetUnit->CurrentHP)));
 	}
 
-	int32 SpeedCost = TargetUnit->GetSpeedUpgradeCost();
+	int32 HPCost = TargetUnit->GetHPUpgradeCost();
 	int32 FireRateCost = TargetUnit->GetFireRateUpgradeCost();
 	int32 PowerCost = TargetUnit->GetPowerUpgradeCost();
-	int32 HPCost = TargetUnit->GetHPUpgradeCost();
+	int32 RangeCost = TargetUnit->GetRangeUpgradeCost();
 
-	if (SpeedCostText)
+	if (HPCostText)
 	{
-		SpeedCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), SpeedCost)));
+		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), HPCost)));
 	}
 	if (FireRateCostText)
 	{
-		FireRateCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), FireRateCost)));
+		FireRateCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), FireRateCost)));
 	}
 	if (PowerCostText)
 	{
-		PowerCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), PowerCost)));
+		PowerCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), PowerCost)));
 	}
-	if (HPCostText)
+	if (RangeCostText)
 	{
-		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), HPCost)));
+		RangeCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), RangeCost)));
 	}
 
-	// Enable/disable buttons based on available points
-	if (UpgradeSpeedButton)
+	// Enable/disable buttons based on available points (no Speed upgrade for static defenders)
+	if (UpgradeHPButton)
 	{
-		UpgradeSpeedButton->SetIsEnabled(PlayerPoints >= SpeedCost);
+		UpgradeHPButton->SetIsEnabled(PlayerPoints >= HPCost);
 	}
 	if (UpgradeFireRateButton)
 	{
@@ -202,23 +201,13 @@ void UZTDUnitMenuWidget::RefreshStats()
 	{
 		UpgradePowerButton->SetIsEnabled(PlayerPoints >= PowerCost);
 	}
+	if (UpgradeRangeButton)
+	{
+		UpgradeRangeButton->SetIsEnabled(PlayerPoints >= RangeCost);
+	}
 	if (UpgradeHPButton)
 	{
 		UpgradeHPButton->SetIsEnabled(PlayerPoints >= HPCost);
-	}
-}
-
-void UZTDUnitMenuWidget::OnUpgradeSpeedClicked()
-{
-	if (!TargetUnit) return;
-
-	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GM) return;
-
-	if (TargetUnit->UpgradeSpeed(GM->PlayerPoints))
-	{
-		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
-		RefreshStats();
 	}
 }
 
@@ -260,6 +249,19 @@ void UZTDUnitMenuWidget::OnUpgradeHPClicked()
 	if (TargetUnit->UpgradeHP(GM->PlayerPoints))
 	{
 		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
+		RefreshStats();
+	}
+}
+
+void UZTDUnitMenuWidget::OnUpgradeRangeClicked()
+{
+	if (!TargetUnit) return;
+
+	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GM) return;
+
+	if (TargetUnit->UpgradeRange(GM->PlayerPoints))
+	{
 		RefreshStats();
 	}
 }

@@ -21,9 +21,6 @@ protected:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
-	void OnUpgradeSpeedClicked();
-
-	UFUNCTION()
 	void OnUpgradeFireRateClicked();
 
 	UFUNCTION()
@@ -33,20 +30,26 @@ protected:
 	void OnUpgradeHPClicked();
 
 	UFUNCTION()
+	void OnUpgradeRangeClicked();
+
+	UFUNCTION()
 	void OnCloseClicked();
 
 	UTextBlock* UnitNameText = nullptr;
 	UTextBlock* SpeedText = nullptr;
 	UTextBlock* FireRateText = nullptr;
 	UTextBlock* PowerText = nullptr;
+	UTextBlock* RangeText = nullptr;
 	UTextBlock* HPText = nullptr;
 	UTextBlock* SpeedCostText = nullptr;
 	UTextBlock* FireRateCostText = nullptr;
 	UTextBlock* PowerCostText = nullptr;
+	UTextBlock* RangeCostText = nullptr;
 	UTextBlock* HPCostText = nullptr;
 	UButton* UpgradeSpeedButton = nullptr;
 	UButton* UpgradeFireRateButton = nullptr;
 	UButton* UpgradePowerButton = nullptr;
+	UButton* UpgradeRangeButton = nullptr;
 	UButton* UpgradeHPButton = nullptr;
 	UButton* CloseButton = nullptr;
 
