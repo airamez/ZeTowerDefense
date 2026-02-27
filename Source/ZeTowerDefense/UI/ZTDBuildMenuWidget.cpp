@@ -1,6 +1,7 @@
 #include "ZTDBuildMenuWidget.h"
 #include "../ZTDPlayerController.h"
 #include "../ZTDGameMode.h"
+#include "../ZTDDefenderUnit.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
@@ -72,14 +73,25 @@ void UZTDBuildMenuWidget::NativeConstruct()
 	BuildHeliButton->OnClicked.AddDynamic(this, &UZTDBuildMenuWidget::OnBuildHeliClicked);
 	CancelButton->OnClicked.AddDynamic(this, &UZTDBuildMenuWidget::OnCancelClicked);
 
-	// Update costs from game mode
-	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (GM)
+	// Update costs from defender classes
+	AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
+	if (PC)
 	{
-		if (TankCostText)
-			TankCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Tank (%d pts)"), GM->TankBuildCost)));
-		if (HeliCostText)
-			HeliCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Heli (%d pts)"), GM->HeliBuildCost)));
+		// Get Tank cost
+		if (TankCostText && PC->DefenderTankClass)
+		{
+			AZTDDefenderUnit* DefaultTank = PC->DefenderTankClass->GetDefaultObject<AZTDDefenderUnit>();
+			int32 TankCost = DefaultTank ? DefaultTank->SpawnCost : 5;
+			TankCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Tank (%d pts)"), TankCost)));
+		}
+		
+		// Get Heli cost
+		if (HeliCostText && PC->DefenderHeliClass)
+		{
+			AZTDDefenderUnit* DefaultHeli = PC->DefenderHeliClass->GetDefaultObject<AZTDDefenderUnit>();
+			int32 HeliCost = DefaultHeli ? DefaultHeli->SpawnCost : 5;
+			HeliCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Heli (%d pts)"), HeliCost)));
+		}
 	}
 }
 

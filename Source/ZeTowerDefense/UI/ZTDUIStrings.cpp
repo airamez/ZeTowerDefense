@@ -5,7 +5,7 @@
 const FString UZTDUIStrings::WavePauseTitleTemplate = TEXT("Wave {0}");
 const FString UZTDUIStrings::WavePauseEnemiesTemplate = TEXT("Enemies: {0} Tanks, {1} Helis");
 const FString UZTDUIStrings::WavePauseInstructionTemplate = TEXT("Press C to start the wave");
-const FString UZTDUIStrings::BaseHPTemplate = TEXT("Base HP: {0}/{1}");
+const FString UZTDUIStrings::BaseHPTemplate = TEXT("Base HP: {0}");
 const FString UZTDUIStrings::PointsTemplate = TEXT("Points: {0}");
 const FString UZTDUIStrings::WaveNumberTemplate = TEXT("Wave: {0}");
 const FString UZTDUIStrings::BuildPhaseTemplate = TEXT("Build Phase - R for Menu");
@@ -32,9 +32,9 @@ FString UZTDUIStrings::GetWavePauseInstruction()
 	return WavePauseInstructionTemplate;
 }
 
-FString UZTDUIStrings::GetBaseHPText(float CurrentHP, float MaxHP)
+FString UZTDUIStrings::GetBaseHPText(float CurrentHP)
 {
-	return FString::Format(*BaseHPTemplate, {FString::SanitizeFloat(CurrentHP), FString::SanitizeFloat(MaxHP)});
+	return FString::Format(*BaseHPTemplate, {FString::SanitizeFloat(CurrentHP)});
 }
 
 FString UZTDUIStrings::GetPointsText(int32 Points)

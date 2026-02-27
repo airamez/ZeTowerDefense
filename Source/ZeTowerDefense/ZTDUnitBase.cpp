@@ -29,7 +29,7 @@ AZTDUnitBase::AZTDUnitBase()
 void AZTDUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentHP = MaxHP;
+	// CurrentHP is now the only HP value, initialized from default value
 }
 
 void AZTDUnitBase::FaceDirection(const FVector& Direction, float DeltaTime)

@@ -147,9 +147,8 @@ void AZTDHUD::DrawGameplayHUD()
 
 	// Draw base HP (closer spacing)
 	float BaseHP = GM->GetBaseHP();
-	float MaxHP = GM->GetBaseMaxHP();
-	FString HPText = FString::Printf(TEXT("Base HP: %.0f/%.0f"), BaseHP, MaxHP);
-	FLinearColor HPColor = (BaseHP < MaxHP * 0.25f) ? WarningColor : HUDTextColor;
+	FString HPText = FString::Printf(TEXT("Base HP: %.0f"), BaseHP);
+	FLinearColor HPColor = (BaseHP < 25.0f) ? WarningColor : HUDTextColor; // Warning when below 25 HP
 	DrawLeftAlignedText(HPText, 20.0f, 20.0f, HPColor, 1.0f);
 
 	// Draw points (closer spacing)

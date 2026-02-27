@@ -36,15 +36,27 @@ AZTDWaveSpawner::AZTDWaveSpawner()
 	}
 	EnemiesAlive = 0;
 	
-	// Wave configuration
-	BaseSpeed = 100.0f;
-	SpeedIncrement = 10.0f;
-	BaseFireRate = 1.0f;
-	FireRateIncrement = 0.1f;
-	BaseHP = 100.0f;
-	HPIncrement = 20.0f;
-	BasePower = 10.0f;
-	PowerIncrement = 5.0f;
+	// Tank stats initialization
+	TankBaseSpeed = 150.0f;
+	TankSpeedIncrement = 15.0f;
+	TankBaseFireRate = 0.3f;
+	TankFireRateIncrement = 0.05f;
+	TankBaseHP = 100.0f;
+	TankHPIncrement = 20.0f;
+	TankBasePower = 10.0f;
+	TankPowerIncrement = 3.0f;
+	TankPointsOnKill = 2;
+	
+	// Helicopter stats initialization
+	HeliBaseSpeed = 250.0f;
+	HeliSpeedIncrement = 25.0f;
+	HeliBaseFireRate = 0.7f;
+	HeliFireRateIncrement = 0.15f;
+	HeliBaseHP = 50.0f;
+	HeliHPIncrement = 10.0f;
+	HeliBasePower = 7.0f;
+	HeliPowerIncrement = 2.5f;
+	HeliPointsOnKill = 1;
 	
 	// Spawn configuration
 	TankHeight = 100.0f;
@@ -176,73 +188,112 @@ void AZTDWaveSpawner::SpawnEnemies()
 
 	UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning %d tanks and %d helis for wave %d"), TankCount, HeliCount, CurrentWave);
 
-	// Calculate wave stats
-	float WaveSpeed = BaseSpeed + SpeedIncrement * (CurrentWave - 1);
-	float WaveFireRate = BaseFireRate + FireRateIncrement * (CurrentWave - 1);
-	float WaveHP = BaseHP + HPIncrement * (CurrentWave - 1);
-	float WavePower = BasePower + PowerIncrement * (CurrentWave - 1);
-
 	EnemiesAlive = 0;
 
-	// Spawn tanks
+	// Create array of spawn positions (larger line formation)
+	TArray<FVector> SpawnPositions;
+	float MapWidth = 8000.0f; // Increased from 4000 to 8000 for larger spread
+	float Spacing = MapWidth / FMath::Max(TotalCount, 1);
+	
+	for (int32 i = 0; i < TotalCount; ++i)
+	{
+		FVector SpawnLoc = GetSpawnLocation(i, TotalCount, SpawnDistance, 0.0f); // Height will be set per enemy type
+		SpawnPositions.Add(SpawnLoc);
+	}
+
+	// Shuffle spawn positions for randomness
+	for (int32 i = SpawnPositions.Num() - 1; i > 0; --i)
+	{
+		int32 RandomIndex = FMath::RandRange(0, i);
+		SpawnPositions.Swap(i, RandomIndex);
+	}
+
+	// Create arrays of enemy types to spawn
+	TArray<TSubclassOf<AZTDEnemyUnit>> EnemyClasses;
+	TArray<float> EnemyHeights;
+	
+	// Add tanks
 	for (int32 i = 0; i < TankCount; ++i)
 	{
-		if (!TankClass) 
+		if (TankClass)
 		{
-			UE_LOG(LogTemp, Error, TEXT("WaveSpawner: TankClass is null, cannot spawn tank!"));
-			continue;
+			EnemyClasses.Add(TankClass);
+			EnemyHeights.Add(TankHeight);
 		}
-
-		FVector SpawnLoc = GetSpawnLocation(i, TotalCount, SpawnDistance, TankHeight);
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning tank #%d at %s"), i+1, *SpawnLoc.ToString());
-
-		AZTDEnemyUnit* Tank = GetWorld()->SpawnActor<AZTDEnemyUnit>(TankClass, SpawnLoc, TankRotation, SpawnParams);
-		if (Tank)
+	}
+	
+	// Add helis
+	for (int32 i = 0; i < HeliCount; ++i)
+	{
+		if (HeliClass)
 		{
-			Tank->InitializeStats(WaveSpeed, WaveFireRate, WaveHP, WavePower, AttackRange);
-			Tank->AttackDistanceToBase = AttackDistance;
-			Tank->OnUnitDestroyed.AddDynamic(this, &AZTDWaveSpawner::OnEnemyDestroyed);
-			ActiveEnemies.Add(Tank);
-			EnemiesAlive++;
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Tank spawned successfully!"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("WaveSpawner: Failed to spawn tank!"));
+			EnemyClasses.Add(HeliClass);
+			EnemyHeights.Add(HeliHeight);
 		}
 	}
 
-	// Spawn helis
-	for (int32 i = 0; i < HeliCount; ++i)
+	// Shuffle enemy types for randomness
+	for (int32 i = EnemyClasses.Num() - 1; i > 0; --i)
 	{
-		if (!HeliClass) 
-		{
-			UE_LOG(LogTemp, Error, TEXT("WaveSpawner: HeliClass is null, cannot spawn heli!"));
-			continue;
-		}
+		int32 RandomIndex = FMath::RandRange(0, i);
+		EnemyClasses.Swap(i, RandomIndex);
+		EnemyHeights.Swap(i, RandomIndex);
+	}
 
-		FVector SpawnLoc = GetSpawnLocation(TankCount + i, TotalCount, SpawnDistance, HeliHeight);
+	// Spawn all enemies at random positions
+	for (int32 i = 0; i < EnemyClasses.Num(); ++i)
+	{
+		TSubclassOf<AZTDEnemyUnit> EnemyClass = EnemyClasses[i];
+		float EnemyHeight = EnemyHeights[i];
+		FVector SpawnLoc = SpawnPositions[i];
+		
+		// Adjust height for this specific enemy type
+		SpawnLoc.Z = EnemyHeight + 500.0f; // Start above ground
+		
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning heli #%d at %s"), i+1, *SpawnLoc.ToString());
-
-		AZTDEnemyUnit* Heli = GetWorld()->SpawnActor<AZTDEnemyUnit>(HeliClass, SpawnLoc, HeliRotation, SpawnParams);
-		if (Heli)
+		// Determine enemy type and calculate stats
+		FString EnemyType;
+		float EnemySpeed, EnemyFireRate, EnemyHP, EnemyPower;
+		int32 PointsOnKill;
+		
+		if (EnemyClass == TankClass)
 		{
-			Heli->InitializeStats(WaveSpeed, WaveFireRate, WaveHP, WavePower, AttackRange);
-			Heli->AttackDistanceToBase = AttackDistance;
-			Heli->OnUnitDestroyed.AddDynamic(this, &AZTDWaveSpawner::OnEnemyDestroyed);
-			ActiveEnemies.Add(Heli);
-			EnemiesAlive++;
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Heli spawned successfully!"));
+			EnemyType = TEXT("Tank");
+			EnemySpeed = TankBaseSpeed + TankSpeedIncrement * (CurrentWave - 1);
+			EnemyFireRate = TankBaseFireRate + TankFireRateIncrement * (CurrentWave - 1);
+			EnemyHP = TankBaseHP + TankHPIncrement * (CurrentWave - 1);
+			EnemyPower = TankBasePower + TankPowerIncrement * (CurrentWave - 1);
+			PointsOnKill = TankPointsOnKill;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("WaveSpawner: Failed to spawn heli!"));
+			EnemyType = TEXT("Heli");
+			EnemySpeed = HeliBaseSpeed + HeliSpeedIncrement * (CurrentWave - 1);
+			EnemyFireRate = HeliBaseFireRate + HeliFireRateIncrement * (CurrentWave - 1);
+			EnemyHP = HeliBaseHP + HeliHPIncrement * (CurrentWave - 1);
+			EnemyPower = HeliBasePower + HeliPowerIncrement * (CurrentWave - 1);
+			PointsOnKill = HeliPointsOnKill;
+		}
+		
+		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning %s #%d at %s"), *EnemyType, i+1, *SpawnLoc.ToString());
+
+		AZTDEnemyUnit* Enemy = GetWorld()->SpawnActor<AZTDEnemyUnit>(EnemyClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
+		if (Enemy)
+		{
+			Enemy->InitializeStats(EnemySpeed, EnemyFireRate, EnemyHP, EnemyPower, AttackRange);
+			Enemy->AttackDistanceToBase = AttackDistance;
+			Enemy->PointsOnKill = PointsOnKill; // Set individual points value
+			Enemy->OnUnitDestroyed.AddDynamic(this, &AZTDWaveSpawner::OnEnemyDestroyed);
+			ActiveEnemies.Add(Enemy);
+			EnemiesAlive++;
+			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: %s spawned successfully! Speed: %.1f, FireRate: %.2f, HP: %.0f, Power: %.1f, Points: %d"), 
+				*EnemyType, EnemySpeed, EnemyFireRate, EnemyHP, EnemyPower, PointsOnKill);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("WaveSpawner: Failed to spawn %s!"), *EnemyType);
 		}
 	}
 
@@ -257,8 +308,8 @@ FVector AZTDWaveSpawner::GetSpawnLocation(int32 Index, int32 TotalCount, float S
 
 	// Enemies spawn along a line perpendicular to the base direction
 	// Base is at one extreme of the map, enemies come from the opposite side
-	// Spread units along the width of the map
-	float MapWidth = 4000.0f; // 40 * 100 (Unreal units)
+	// Spread units along the width of the map with larger spacing
+	float MapWidth = 8000.0f; // Increased from 4000 to 8000 for larger spread
 	float Spacing = MapWidth / FMath::Max(TotalCount, 1);
 	float StartY = BaseLocation.Y - MapWidth * 0.5f;
 	float YPos = StartY + Spacing * Index + Spacing * 0.5f;
@@ -272,21 +323,19 @@ FVector AZTDWaveSpawner::GetSpawnLocation(int32 Index, int32 TotalCount, float S
 	// Ground detection
 	FHitResult GroundHit;
 	FVector TraceStart = SpawnPos;
-	FVector TraceEnd = SpawnPos - FVector(0, 0, 2000.0f); // Trace down
+	FVector TraceEnd = SpawnPos - FVector(0, 0, 1000.0f); // Trace down 1000 units
 
 	FCollisionQueryParams QueryParams;
-	QueryParams.bTraceComplex = true;
+	QueryParams.bTraceComplex = false;
+	QueryParams.bReturnPhysicalMaterial = false;
 
-	// Try multiple collision channels for better ground detection
-	bool bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
-	if (!bHitGround)
-	{
-		bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_WorldDynamic, QueryParams);
-	}
-	if (!bHitGround)
-	{
-		bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
-	}
+	bool bHitGround = GetWorld()->LineTraceSingleByChannel(
+		GroundHit,
+		TraceStart,
+		TraceEnd,
+		ECC_WorldStatic,
+		QueryParams
+	);
 
 	if (bHitGround)
 	{

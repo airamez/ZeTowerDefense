@@ -22,6 +22,8 @@ AZTDEnemyUnit::AZTDEnemyUnit()
 			CharMovement->GravityScale = 1.0f;
 			CharMovement->AirControl = 0.2f;
 			CharMovement->GroundFriction = 3.0f;
+			CharMovement->SetComponentTickEnabled(false); // Disable tick to prevent conflicts
+			CharMovement->SetMovementMode(MOVE_None); // Disable movement
 		}
 	}
 }
@@ -43,8 +45,7 @@ void AZTDEnemyUnit::InitializeStats(float InSpeed, float InFireRate, float InHP,
 {
 	Speed = InSpeed;
 	FireRate = InFireRate;
-	MaxHP = InHP;
-	CurrentHP = InHP;
+	CurrentHP = InHP; // Only use CurrentHP now
 	Power = InPower;
 	AttackRange = InAttackRange;
 }
@@ -157,8 +158,15 @@ void AZTDEnemyUnit::MoveTowardBase(float DeltaTime)
 {
 	if (!TargetBase) return;
 
+	// Debug logging
+	UE_LOG(LogTemp, Warning, TEXT("Enemy %s moving toward base with Speed: %.1f"), *GetName(), Speed);
+
 	FVector Direction = (TargetBase->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FVector NewLocation = GetActorLocation() + Direction * Speed * DeltaTime;
+
+	// Debug logging
+	UE_LOG(LogTemp, Warning, TEXT("Enemy %s: CurrentPos: %s, NewPos: %s, DeltaTime: %.3f"), 
+		*GetName(), *GetActorLocation().ToString(), *NewLocation.ToString(), DeltaTime);
 
 	// Ground detection - trace down from proposed position
 	FHitResult GroundHit;
@@ -173,23 +181,23 @@ void AZTDEnemyUnit::MoveTowardBase(float DeltaTime)
 	bool bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 	if (!bHitGround)
 	{
-		// Try WorldDynamic if WorldStatic fails
+		// Try with WorldDynamic channel
 		bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_WorldDynamic, QueryParams);
-	}
-	if (!bHitGround)
-	{
-		// Try Visibility as last resort
-		bHitGround = GetWorld()->LineTraceSingleByChannel(GroundHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
 	}
 
 	if (bHitGround)
 	{
-		// Place enemy on ground with proper offset based on capsule size
+		// Place enemy on ground with proper height
 		float CapsuleHalfHeight = 50.0f; // Half of capsule height
-		NewLocation.Z = GroundHit.Location.Z + CapsuleHalfHeight + 10.0f; // Add small buffer
+		NewLocation.Z = GroundHit.Location.Z + CapsuleHalfHeight + 10.0f;
+		SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
-
-	SetActorLocation(NewLocation);
+	else
+	{
+		// No ground detected, use the calculated position with default height
+		NewLocation.Z = 100.0f; // Default height if no ground detected
+		SetActorLocation(NewLocation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
 
 	// Face movement direction
 	FaceDirection(Direction, DeltaTime);

@@ -83,6 +83,31 @@ void UZTDUnitMenuWidget::NativeConstruct()
 	MakeStatRow(TEXT("Speed"), SpeedText, SpeedCostText, UpgradeSpeedButton);
 	MakeStatRow(TEXT("FireRate"), FireRateText, FireRateCostText, UpgradeFireRateButton);
 	MakeStatRow(TEXT("Power"), PowerText, PowerCostText, UpgradePowerButton);
+	
+	// HP upgrade row (no stat text display, just upgrade button)
+	UHorizontalBox* HPRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("HPRow"));
+	VBox->AddChild(HPRow);
+	if (UVerticalBoxSlot* RSlot = Cast<UVerticalBoxSlot>(HPRow->Slot))
+	{
+		RSlot->SetPadding(FMargin(0.0f, 2.0f));
+	}
+
+	UTextBlock* HPLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HPLabel"));
+	HPLabel->SetText(FText::FromString(TEXT("HP: --")));
+	HPLabel->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	HPRow->AddChild(HPLabel);
+	if (UHorizontalBoxSlot* HSlot = Cast<UHorizontalBoxSlot>(HPLabel->Slot))
+	{
+		HSlot->SetSize(ESlateSizeRule::Fill);
+	}
+
+	UpgradeHPButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("HPBtn"));
+	HPRow->AddChild(UpgradeHPButton);
+
+	HPCostText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HPCost"));
+	HPCostText->SetText(FText::FromString(TEXT("Up (0)")));
+	HPCostText->SetJustification(ETextJustify::Center);
+	UpgradeHPButton->AddChild(HPCostText);
 
 	// Close button
 	CloseButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("CloseBtn"));
@@ -100,6 +125,7 @@ void UZTDUnitMenuWidget::NativeConstruct()
 	UpgradeSpeedButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeSpeedClicked);
 	UpgradeFireRateButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeFireRateClicked);
 	UpgradePowerButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradePowerClicked);
+	UpgradeHPButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnUpgradeHPClicked);
 	CloseButton->OnClicked.AddDynamic(this, &UZTDUnitMenuWidget::OnCloseClicked);
 }
 
@@ -138,12 +164,13 @@ void UZTDUnitMenuWidget::RefreshStats()
 
 	if (HPText)
 	{
-		HPText->SetText(FText::FromString(FString::Printf(TEXT("HP: %.0f / %.0f"), TargetUnit->CurrentHP, TargetUnit->MaxHP)));
+		HPText->SetText(FText::FromString(FString::Printf(TEXT("HP: %.0f"), TargetUnit->CurrentHP)));
 	}
 
 	int32 SpeedCost = TargetUnit->GetSpeedUpgradeCost();
 	int32 FireRateCost = TargetUnit->GetFireRateUpgradeCost();
 	int32 PowerCost = TargetUnit->GetPowerUpgradeCost();
+	int32 HPCost = TargetUnit->GetHPUpgradeCost();
 
 	if (SpeedCostText)
 	{
@@ -156,6 +183,10 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (PowerCostText)
 	{
 		PowerCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), PowerCost)));
+	}
+	if (HPCostText)
+	{
+		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Cost: %d"), HPCost)));
 	}
 
 	// Enable/disable buttons based on available points
@@ -170,6 +201,10 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (UpgradePowerButton)
 	{
 		UpgradePowerButton->SetIsEnabled(PlayerPoints >= PowerCost);
+	}
+	if (UpgradeHPButton)
+	{
+		UpgradeHPButton->SetIsEnabled(PlayerPoints >= HPCost);
 	}
 }
 
@@ -209,6 +244,20 @@ void UZTDUnitMenuWidget::OnUpgradePowerClicked()
 	if (!GM) return;
 
 	if (TargetUnit->UpgradePower(GM->PlayerPoints))
+	{
+		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
+		RefreshStats();
+	}
+}
+
+void UZTDUnitMenuWidget::OnUpgradeHPClicked()
+{
+	if (!TargetUnit) return;
+
+	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GM) return;
+
+	if (TargetUnit->UpgradeHP(GM->PlayerPoints))
 	{
 		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
 		RefreshStats();

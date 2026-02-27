@@ -33,17 +33,10 @@ public:
 
 	// --- Points ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game")
-	int32 PlayerPoints = 10;
+	int32 PlayerPoints = 15;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game")
 	int32 PointsPerKill = 1;
-
-	// --- Build Costs ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game|Building")
-	int32 TankBuildCost = 5;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game|Building")
-	int32 HeliBuildCost = 5;
 
 	// --- State ---
 	UPROPERTY(BlueprintReadOnly, Category = "Game")
@@ -109,9 +102,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	float GetBaseHP() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Game")
-	float GetBaseMaxHP() const;
 
 protected:
 	virtual void BeginPlay() override;

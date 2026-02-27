@@ -67,9 +67,6 @@ public:
 	float FireRate = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float MaxHP = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	float CurrentHP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")

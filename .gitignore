@@ -93,14 +93,4 @@ CachedAssetRegistry_*.bin
 *.dll
 *.exe
 
-# VDB (Volumetric Data) files - very large
-*.vdb
-Content/VDBPack_01/
 
-# Large texture and asset files
-Content/**/*.udk
-Content/**/*.upt
-Content/**/*_LOD_*.uasset
-
-# Large explosion effects
-Content/MsvFx_Niagara_Explosion_Pack_01/Resources/Texture/

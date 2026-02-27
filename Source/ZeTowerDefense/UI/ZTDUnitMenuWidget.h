@@ -30,6 +30,9 @@ protected:
 	void OnUpgradePowerClicked();
 
 	UFUNCTION()
+	void OnUpgradeHPClicked();
+
+	UFUNCTION()
 	void OnCloseClicked();
 
 	UTextBlock* UnitNameText = nullptr;
@@ -40,9 +43,11 @@ protected:
 	UTextBlock* SpeedCostText = nullptr;
 	UTextBlock* FireRateCostText = nullptr;
 	UTextBlock* PowerCostText = nullptr;
+	UTextBlock* HPCostText = nullptr;
 	UButton* UpgradeSpeedButton = nullptr;
 	UButton* UpgradeFireRateButton = nullptr;
 	UButton* UpgradePowerButton = nullptr;
+	UButton* UpgradeHPButton = nullptr;
 	UButton* CloseButton = nullptr;
 
 	UPROPERTY()

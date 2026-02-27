@@ -334,11 +334,21 @@ bool AZTDPlayerController::TryPlaceUnit()
 	// Adjust spawn height to prevent sinking through floor
 	Location.Z += 100.0f; // Spawn 100 units above ground to be safe
 
-	int32 Cost = (CurrentBuildType == EZTDBuildType::Tank) ? GM->TankBuildCost : GM->HeliBuildCost;
-	if (!GM->SpendPoints(Cost)) return false;
-
 	TSubclassOf<AZTDDefenderUnit> ClassToSpawn = (CurrentBuildType == EZTDBuildType::Tank) ? DefenderTankClass : DefenderHeliClass;
 	if (!ClassToSpawn) return false;
+
+	// Get spawn cost from the defender class default object
+	int32 Cost = 5; // Default fallback
+	if (ClassToSpawn)
+	{
+		AZTDDefenderUnit* DefaultDefender = ClassToSpawn->GetDefaultObject<AZTDDefenderUnit>();
+		if (DefaultDefender)
+		{
+			Cost = DefaultDefender->SpawnCost;
+		}
+	}
+	
+	if (!GM->SpendPoints(Cost)) return false;
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

@@ -21,7 +21,7 @@ public:
 
 	// HUD Strings
 	UFUNCTION(BlueprintPure, Category = "UI Strings")
-	static FString GetBaseHPText(float CurrentHP, float MaxHP);
+	static FString GetBaseHPText(float CurrentHP);
 
 	UFUNCTION(BlueprintPure, Category = "UI Strings")
 	static FString GetPointsText(int32 Points);

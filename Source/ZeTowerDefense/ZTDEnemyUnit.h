@@ -31,6 +31,10 @@ public:
 	UPROPERTY()
 	AZTDDefenderUnit* AggroTarget = nullptr;
 
+	// Points awarded when this enemy is destroyed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	int32 PointsOnKill = 1;
+
 	// Called by a defender when it fires at this enemy
 	void NotifyAttackedBy(AZTDDefenderUnit* Attacker);
 

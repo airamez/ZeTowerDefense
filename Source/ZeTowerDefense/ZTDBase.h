@@ -5,7 +5,7 @@
 #include "ZTDBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBaseDestroyed);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBaseHPChanged, float, CurrentHP, float, MaxHP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBaseHPChanged, float, CurrentHP);
 
 UCLASS(Blueprintable)
 class ZETOWERDEFENSE_API AZTDBase : public AActor
@@ -20,9 +20,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* MeshComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float MaxHP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	float CurrentHP = 100.0f;

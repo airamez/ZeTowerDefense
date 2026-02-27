@@ -15,6 +15,249 @@ A 3D tower defense game built in Unreal Engine 5.7 where players defend their ba
 - **Base Position**: Center of the extreme side
 - **Enemy Spawn**: Linear spawn at configurable distance from base
 
+## 🔄 Recent System Updates (February 2026)
+
+### 🎯 HP System Overhaul
+**Complete removal of MaxHP - CurrentHP only system**
+
+#### Changes Made:
+- ❌ **Removed MaxHP** from all unit classes (ZTDUnitBase, ZTDBase, ZTDGameMode)
+- ✅ **CurrentHP only** - Single HP value for all units
+- ✅ **HP Upgrades** - Defenders can upgrade HP using same Fibonacci cost system
+- ✅ **Direct HP Increase** - Each HP upgrade adds 25 HP directly to CurrentHP
+- ✅ **Cleaner UI** - HP display shows "HP: 125" instead of "HP: 125/125"
+
+#### Upgrade System:
+- **HP Upgrade Cost**: Fibonacci sequence (1, 1, 2, 3, 5, 8, 13...)
+- **HP Upgrade Amount**: +25 HP per level
+- **HP Level**: Tracks current upgrade level (0, 1, 2, 3...)
+
+### ⚡ Defender Stat Simplification
+**Removed all "Base" variables - direct stat upgrades**
+
+#### Old System (Removed):
+```
+BaseFireRate + FireRateUpgradeAmount × FireRateLevel = FireRate
+BaseSpeed + SpeedUpgradeAmount × SpeedLevel = Speed
+BasePower + PowerUpgradeAmount × PowerLevel = Power
+```
+
+#### New System (Current):
+```
+FireRate × 2.0f = New FireRate (doubles each upgrade)
+Speed × 2.0f = New Speed (doubles each upgrade)
+Power × 2.0f = New Power (doubles each upgrade)
+AttackRange × 2.0f = New AttackRange (doubles each upgrade)
+CurrentHP × 2.0f = New CurrentHP (doubles each upgrade)
+```
+
+#### Benefits:
+- ✅ **Much simpler** - No confusing base vs current stats
+- ✅ **Exponential growth** - Each upgrade exactly doubles effectiveness
+- ✅ **Easy to balance** - Just adjust initial values
+- ✅ **Cleaner Blueprints** - Fewer variables to manage
+
+### 🎲 Enemy Spawn System Redesign
+**Randomized positions and mixed enemy types**
+
+#### Old System (Predictable):
+- Tanks always spawn on left side
+- Helis always spawn on right side
+- Small line width (4000 units)
+- Sequential positioning
+
+#### New System (Random):
+- **100% larger spawn line** (8000 units vs 4000)
+- **Completely random positions** - Fisher-Yates shuffle algorithm
+- **Mixed enemy types** - Tanks and helis spawn at random positions
+- **Better tactical variety** - Defenders must cover wider area
+
+#### Visual Comparison:
+```
+Before: [Tank][Tank][Tank][Tank] | [Heli][Heli][Heli][Heli]
+After:  [Heli][Tank][Heli][Tank][Tank][Heli][Tank][Heli]
+```
+
+### 🎯 Separate Enemy Stats System
+**Individual stats for tanks and helicopters**
+
+#### Tank Stats (Slow & Tough):
+- **Speed**: 150 → +15 per wave
+- **FireRate**: 0.3 → +0.05 per wave  
+- **HP**: 100 → +20 per wave
+- **Power**: 10 → +3 per wave
+- **Points**: 2 points per kill
+
+#### Helicopter Stats (Fast & Agile):
+- **Speed**: 250 → +25 per wave
+- **FireRate**: 0.7 → +0.15 per wave
+- **HP**: 50 → +10 per wave
+- **Power**: 7 → +2.5 per wave
+- **Points**: 1 point per kill
+
+#### Wave Progression Examples:
+| Wave | Tank Speed | Tank HP | Heli Speed | Heli HP |
+|------|------------|---------|------------|---------|
+| 1    | 150        | 100     | 250        | 50      |
+| 5    | 210        | 180     | 350        | 90      |
+| 10   | 285        | 280     | 475        | 140     |
+
+### 💰 Individual Point Rewards
+**Enemy-specific point values instead of global rewards**
+
+#### Changes:
+- ❌ **Removed global PointsPerKill** system
+- ✅ **Individual PointsOnKill** per enemy type
+- ✅ **Tanks give 2 points** (harder to kill)
+- ✅ **Helis give 1 point** (easier to kill)
+- ✅ **Economic decisions** - Players must prioritize targets
+
+### 🏗️ Spawn Cost System
+**Individual spawn costs per defender type**
+
+#### Changes:
+- ❌ **Removed global build costs** from GameMode
+- ✅ **Individual SpawnCost** property per defender Blueprint
+- ✅ **Flexible pricing** - Different costs for different defenders
+- ✅ **Easy balancing** - Adjust costs per unit type
+
+### 📊 Updated Blueprint Categories
+
+#### Wave Spawner Stats:
+```
+Wave
+├── Units (Initial counts and increments)
+├── Tank (All tank-specific stats and rewards)
+├── Heli (All helicopter-specific stats and rewards)
+├── Distance (Spawn distance parameters)
+└── Spawn (Height and rotation settings)
+```
+
+#### Defender Stats:
+```
+Defender Blueprint
+├── Stats (Speed, FireRate, Power, AttackRange, CurrentHP, SpawnCost)
+└── Upgrade (All upgrade levels - no base variables)
+```
+
+### 🎮 Gameplay Impact
+
+#### Strategic Depth:
+- **Enemy Diversity** - Tanks and helis have distinct roles
+- **Position Randomness** - Unpredictable spawn patterns
+- **Economic Choices** - Different point rewards affect target priority
+- **Upgrade Strategy** - Doubling system creates powerful late-game defenders
+
+#### Balance Improvements:
+- **Clear Progression** - Predictable stat growth per wave
+- **Fair Rewards** - Tougher enemies give more points
+- **Scalable Difficulty** - Each enemy type scales independently
+- **Player Agency** - More meaningful upgrade decisions
+
+### 🔧 Technical Improvements
+
+#### Code Quality:
+- **Removed redundant variables** - Cleaner, more maintainable code
+- **Better organization** - Logical grouping of related stats
+- **Improved performance** - Less unnecessary calculations
+- **Enhanced debugging** - Better logging and error handling
+
+#### Blueprint Integration:
+- **Cleaner interfaces** - Fewer confusing properties
+- **Better categorization** - Logical grouping in Details panel
+- **Easier customization** - All values editable in Blueprint editor
+- **Future-proof design** - Easy to add new enemy types
+
+### 🎯 Attack Distance vs Attack Range
+
+The tower defense system uses two distinct distance parameters that control enemy behavior and combat engagement:
+
+#### 📍 **AttackDistance** (Wave Spawner)
+- **Purpose**: Distance where enemies stop moving and start attacking the **base**
+- **Used by**: Enemy units only
+- **Applied to**: `Enemy->AttackDistanceToBase`
+- **Default Value**: 2000.0 units
+- **Function**: "When I'm this close to the base, stop moving and start shooting"
+
+#### 🎯 **AttackRange** (Wave Spawner)
+- **Purpose**: Combat engagement distance for **targeting other units**
+- **Used by**: Both enemies and defenders
+- **Applied to**: `Enemy->AttackRange` (inherited from `ZTDUnitBase`)
+- **Default Value**: 1500.0 units
+- **Function**: "I can only see and attack targets within this range"
+
+#### 🔄 **How They Work Together**
+
+**Enemy Behavior Flow:**
+1. **Spawn** → Move toward base
+2. **Check distance to base**: `if (DistToBase > AttackDistanceToBase)` → Keep moving
+3. **Stop at AttackDistance**: When `DistToBase <= AttackDistanceToBase` → Stop moving
+4. **Look for targets**: Use `AttackRange` to find defenders within range
+5. **Attack**: Shoot at defenders or base
+
+**Visual Example:**
+```
+Base ←─────── AttackDistance (2000) ─────── Enemy ←── AttackRange (1500) ──→ Defender
+```
+
+#### 📊 **Current Configuration**
+- **AttackDistance**: 2000 units (enemies stop 2000 units from base)
+- **AttackRange**: 1500 units (combat engagement range)
+
+#### 🎮 **Gameplay Impact**
+
+**If AttackDistance > AttackRange (Current Setup: 2000 > 1500):**
+- ✅ Enemies stop outside defender range
+- ✅ Creates a "safe zone" around base  
+- ✅ Enemies can only attack base, not defenders
+- ✅ More time for defenders to prepare
+
+**If AttackDistance < AttackRange:**
+- ⚡ Enemies stop within defender range
+- ⚡ Immediate combat engagement
+- ⚡ Defenders can attack enemies before they reach base
+- ⚡ More intense, faster-paced combat
+
+#### 🔧 **Balance Tuning**
+
+**Increase AttackDistance:**
+- Enemies stop further from base
+- More reaction time for defenders
+- Easier defense difficulty
+
+**Decrease AttackDistance:**
+- Enemies get closer to base
+- Less reaction time
+- Harder defense difficulty
+
+**Increase AttackRange:**
+- Units can engage from further away
+- More tactical positioning options
+- Larger combat area
+
+**Decrease AttackRange:**
+- Units must get closer to engage
+- More precise positioning required
+- Tighter combat zones
+
+#### 💡 **Strategic Considerations**
+
+The relationship between these two parameters creates different tactical scenarios:
+
+**Buffer Zone Setup (AttackDistance > AttackRange):**
+- Creates a 500-unit "buffer zone" where enemies are stationary but can't attack
+- Allows defenders to attack approaching enemies safely
+- Good for traditional tower defense gameplay
+
+**Immediate Engagement Setup (AttackDistance ≤ AttackRange):**
+- Enemies engage as soon as they stop moving
+- No safe zone - immediate combat
+- Better for action-oriented gameplay
+
+These parameters can be adjusted in the Wave Spawner settings to create different difficulty curves and tactical experiences!
+
+---
+
 ## 🌊 Wave Spawner System
 
 ### Wave Progression

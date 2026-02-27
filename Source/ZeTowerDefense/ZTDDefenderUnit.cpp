@@ -32,10 +32,8 @@ AZTDDefenderUnit::AZTDDefenderUnit()
 void AZTDDefenderUnit::BeginPlay()
 {
 	Super::BeginPlay();
-	BaseSpeed = Speed;
-	BaseFireRate = FireRate;
-	BasePower = Power;
-	BaseAttackRange = AttackRange;
+	// Stats are now used directly, no base variables needed
+	// CurrentHP is now the only HP value, no need to store BaseHP
 }
 
 void AZTDDefenderUnit::Tick(float DeltaTime)
@@ -134,7 +132,7 @@ bool AZTDDefenderUnit::UpgradeSpeed(int32& PlayerPoints)
 
 	PlayerPoints -= Cost;
 	SpeedLevel++;
-	Speed = BaseSpeed + SpeedUpgradeAmount * SpeedLevel;
+	Speed *= 2.0f; // Double the current Speed
 	return true;
 }
 
@@ -145,7 +143,7 @@ bool AZTDDefenderUnit::UpgradeFireRate(int32& PlayerPoints)
 
 	PlayerPoints -= Cost;
 	FireRateLevel++;
-	FireRate = BaseFireRate + FireRateUpgradeAmount * FireRateLevel;
+	FireRate *= 2.0f; // Double the current FireRate
 	return true;
 }
 
@@ -156,7 +154,7 @@ bool AZTDDefenderUnit::UpgradePower(int32& PlayerPoints)
 
 	PlayerPoints -= Cost;
 	PowerLevel++;
-	Power = BasePower + PowerUpgradeAmount * PowerLevel;
+	Power *= 2.0f; // Double the current Power
 	return true;
 }
 
@@ -167,6 +165,17 @@ bool AZTDDefenderUnit::UpgradeRange(int32& PlayerPoints)
 
 	PlayerPoints -= Cost;
 	RangeLevel++;
-	AttackRange = BaseAttackRange + RangeUpgradeAmount * RangeLevel;
+	AttackRange *= 2.0f; // Double the current AttackRange
+	return true;
+}
+
+bool AZTDDefenderUnit::UpgradeHP(int32& PlayerPoints)
+{
+	int32 Cost = GetHPUpgradeCost();
+	if (PlayerPoints < Cost) return false;
+
+	PlayerPoints -= Cost;
+	HPLevel++;
+	CurrentHP *= 2.0f; // Double the current HP
 	return true;
 }

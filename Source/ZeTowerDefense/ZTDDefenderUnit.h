@@ -26,34 +26,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
 	int32 PowerLevel = 0;
 
-	// Base stats before upgrades
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float BaseSpeed = 0.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float BaseFireRate = 1.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float BasePower = 10.0f;
-
-	// Upgrade increment per level
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
-	float SpeedUpgradeAmount = 50.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
-	float FireRateUpgradeAmount = 0.2f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
-	float PowerUpgradeAmount = 5.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
-	float RangeUpgradeAmount = 200.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
 	int32 RangeLevel = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-	float BaseAttackRange = 1500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Upgrade")
+	int32 HPLevel = 0;
 
 	UFUNCTION(BlueprintCallable, Category = "Upgrade")
 	int32 GetUpgradeCost(int32 CurrentLevel) const;
@@ -61,6 +38,10 @@ public:
 	// Flag to identify placement previews (not real units)
 	UPROPERTY(BlueprintReadOnly, Category = "Unit")
 	bool bIsPlacementPreview = false;
+
+	// Cost to spawn this defender unit
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	int32 SpawnCost = 5;
 
 	UFUNCTION(BlueprintCallable, Category = "Upgrade")
 	bool UpgradeSpeed(int32& PlayerPoints);
@@ -75,6 +56,9 @@ public:
 	bool UpgradeRange(int32& PlayerPoints);
 
 	UFUNCTION(BlueprintCallable, Category = "Upgrade")
+	bool UpgradeHP(int32& PlayerPoints);
+
+	UFUNCTION(BlueprintCallable, Category = "Upgrade")
 	int32 GetSpeedUpgradeCost() const { return GetUpgradeCost(SpeedLevel); }
 
 	UFUNCTION(BlueprintCallable, Category = "Upgrade")
@@ -85,6 +69,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Upgrade")
 	int32 GetRangeUpgradeCost() const { return GetUpgradeCost(RangeLevel); }
+
+	UFUNCTION(BlueprintCallable, Category = "Upgrade")
+	int32 GetHPUpgradeCost() const { return GetUpgradeCost(HPLevel); }
 
 protected:
 	virtual void BeginPlay() override;

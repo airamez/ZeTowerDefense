@@ -31,30 +31,61 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Units")
 	int32 HeliIncrement = 1;
 
-	// --- Wave Stat Increments ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float BaseSpeed = 200.0f;
+	// --- Tank Stats ---
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankBaseSpeed = 150.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float SpeedIncrement = 20.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankSpeedIncrement = 15.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float BaseFireRate = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankBaseFireRate = 0.3f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float FireRateIncrement = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankFireRateIncrement = 0.05f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float BaseHP = 50.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankBaseHP = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float HPIncrement = 10.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankHPIncrement = 20.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float BasePower = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankBasePower = 10.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Stats")
-	float PowerIncrement = 2.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	float TankPowerIncrement = 3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Tank")
+	int32 TankPointsOnKill = 2;
+
+	// --- Helicopter Stats ---
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliBaseSpeed = 250.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliSpeedIncrement = 25.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliBaseFireRate = 0.7f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliFireRateIncrement = 0.15f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliBaseHP = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliHPIncrement = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliBasePower = 7.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	float HeliPowerIncrement = 2.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Heli")
+	int32 HeliPointsOnKill = 1;
 
 	// --- Spawner Distance Parameters ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Distance")
@@ -77,7 +108,7 @@ public:
 	float TankHeight = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Spawn")
-	float HeliHeight = 500.0f;
+	float HeliHeight = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave|Spawn")
 	FRotator TankRotation = FRotator::ZeroRotator;

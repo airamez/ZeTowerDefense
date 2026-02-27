@@ -154,11 +154,6 @@ float AZTDGameMode::GetBaseHP() const
 	return GameBase ? GameBase->CurrentHP : 0.0f;
 }
 
-float AZTDGameMode::GetBaseMaxHP() const
-{
-	return GameBase ? GameBase->MaxHP : 100.0f;
-}
-
 void AZTDGameMode::OnWaveComplete(int32 WaveNumber)
 {
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
@@ -176,7 +171,14 @@ void AZTDGameMode::OnWaveComplete(int32 WaveNumber)
 void AZTDGameMode::OnEnemyKilled(AZTDEnemyUnit* KilledEnemy)
 {
 	TotalEnemiesKilled++;
-	AddPoints(PointsPerKill);
+	if (KilledEnemy)
+	{
+		AddPoints(KilledEnemy->PointsOnKill);
+	}
+	else
+	{
+		AddPoints(PointsPerKill); // Fallback to global value
+	}
 }
 
 void AZTDGameMode::OnBaseDestroyed()
