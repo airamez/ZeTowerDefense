@@ -148,17 +148,17 @@ void UZTDUnitMenuWidget::RefreshStats()
 
 	if (FireRateText)
 	{
-		FireRateText->SetText(FText::FromString(FString::Printf(TEXT("Fire Rate: %.2f (Lv %d)"), TargetUnit->FireRate, TargetUnit->FireRateLevel)));
+		FireRateText->SetText(FText::FromString(FString::Printf(TEXT("Fire Rate: %.2f"), TargetUnit->FireRate)));
 	}
 
 	if (PowerText)
 	{
-		PowerText->SetText(FText::FromString(FString::Printf(TEXT("Power: %.1f (Lv %d)"), TargetUnit->Power, TargetUnit->PowerLevel)));
+		PowerText->SetText(FText::FromString(FString::Printf(TEXT("Power: %.1f"), TargetUnit->Power)));
 	}
 
 	if (RangeText)
 	{
-		RangeText->SetText(FText::FromString(FString::Printf(TEXT("Range: %.0f (Lv %d)"), TargetUnit->AttackRange, TargetUnit->RangeLevel)));
+		RangeText->SetText(FText::FromString(FString::Printf(TEXT("Range: %.0f"), TargetUnit->AttackRange)));
 	}
 
 	if (HPText)
@@ -173,19 +173,19 @@ void UZTDUnitMenuWidget::RefreshStats()
 
 	if (HPCostText)
 	{
-		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), HPCost)));
+		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), HPCost)));
 	}
 	if (FireRateCostText)
 	{
-		FireRateCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), FireRateCost)));
+		FireRateCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), FireRateCost)));
 	}
 	if (PowerCostText)
 	{
-		PowerCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), PowerCost)));
+		PowerCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), PowerCost)));
 	}
 	if (RangeCostText)
 	{
-		RangeCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade Cost = %d"), RangeCost)));
+		RangeCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), RangeCost)));
 	}
 
 	// Enable/disable buttons based on available points (no Speed upgrade for static defenders)
