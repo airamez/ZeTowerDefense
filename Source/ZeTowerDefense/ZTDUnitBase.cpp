@@ -141,12 +141,10 @@ void AZTDUnitBase::HandleDeath()
 	// Spawn explosion effect if configured
 	if (ExplosionConfig.NiagaraSystem || ExplosionConfig.ParticleSystem || ExplosionConfig.ExplosionSound)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Spawning explosion for unit: %s"), *GetName());
 		AZTDExplosionEffect::SpawnExplosion(this, GetActorLocation(), ExplosionConfig);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No explosion effect configured on unit: %s"), *GetName());
 	}
 
 	// Delay destroy slightly to allow effects to be visible
@@ -160,13 +158,11 @@ void AZTDUnitBase::FindTarget()
 
 void AZTDUnitBase::TestNiagaraSystems()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Testing Niagara system loading..."));
 	
 	// Try to load a specific explosion asset
 	UNiagaraSystem* TestSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/VDBPack_01/VDB_Assets/Explosion_01_LOD_2"));
 	if (TestSystem)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Successfully loaded Explosion_01_LOD_2: %s"), *TestSystem->GetName());
 		ExplosionConfig.NiagaraSystem = TestSystem; // Auto-assign for testing
 		ExplosionConfig.ExplosionScale = 1.0f;
 		ExplosionConfig.LifeSpan = 3.0f;

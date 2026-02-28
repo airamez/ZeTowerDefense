@@ -23,8 +23,7 @@ AZTDGameMode::AZTDGameMode()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Could not find BP_Base class"));
-	}
+			}
 }
 
 void AZTDGameMode::BeginPlay()

@@ -22,7 +22,6 @@ AZTDWaveSpawner::AZTDWaveSpawner()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Could not find BP_EnemyTank class"));
 	}
 
 	static ConstructorHelpers::FClassFinder<AZTDEnemyUnit> HeliClassFinder(TEXT("/Game/Blueprints/BP_EnemyHeli"));
@@ -32,7 +31,6 @@ AZTDWaveSpawner::AZTDWaveSpawner()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Could not find BP_EnemyHeli class"));
 	}
 	EnemiesAlive = 0;
 	
@@ -75,7 +73,6 @@ void AZTDWaveSpawner::BeginPlay()
 		GameBase = Cast<AZTDBase>(FoundBases[0]);
 		if (GameBase)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Found base at %s"), *GameBase->GetActorLocation().ToString());
 		}
 	}
 	else
@@ -91,7 +88,6 @@ void AZTDWaveSpawner::BeginPlay()
 		if (FoundTankClass)
 		{
 			TankClass = FoundTankClass;
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Found Tank class automatically"));
 		}
 		else
 		{
@@ -106,7 +102,6 @@ void AZTDWaveSpawner::BeginPlay()
 		if (FoundHeliClass)
 		{
 			HeliClass = FoundHeliClass;
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Found Heli class automatically"));
 		}
 		else
 		{
@@ -114,14 +109,10 @@ void AZTDWaveSpawner::BeginPlay()
 		}
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: TankClass=%s, HeliClass=%s"), 
-		TankClass ? *TankClass->GetName() : TEXT("NULL"), 
-		HeliClass ? *HeliClass->GetName() : TEXT("NULL"));
 
 	// Debug: Check if enemy classes are set
 	if (TankClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: TankClass is set to %s"), *TankClass->GetName());
 	}
 	else
 	{
@@ -130,7 +121,6 @@ void AZTDWaveSpawner::BeginPlay()
 
 	if (HeliClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: HeliClass is set to %s"), *HeliClass->GetName());
 	}
 	else
 	{
@@ -142,7 +132,6 @@ void AZTDWaveSpawner::StartNextWave()
 {
 	if (bWaveInProgress) 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Wave already in progress!"));
 		return;
 	}
 
@@ -153,7 +142,6 @@ void AZTDWaveSpawner::StartNextWave()
 	bWaveInProgress = true;
 	ActiveEnemies.Empty();
 
-	UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Starting wave %d"), CurrentWave);
 	SpawnEnemies();
 }
 
@@ -186,7 +174,6 @@ void AZTDWaveSpawner::SpawnEnemies()
 	int32 TotalCount = TankCount + HeliCount;
 	float SpawnDistance = GetSpawnDistanceForWave(CurrentWave);
 
-	UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning %d tanks and %d helis for wave %d"), TankCount, HeliCount, CurrentWave);
 
 	EnemiesAlive = 0;
 
@@ -277,7 +264,6 @@ void AZTDWaveSpawner::SpawnEnemies()
 			PointsOnKill = HeliPointsOnKill;
 		}
 		
-		UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Spawning %s #%d at %s"), *EnemyType, i+1, *SpawnLoc.ToString());
 
 		AZTDEnemyUnit* Enemy = GetWorld()->SpawnActor<AZTDEnemyUnit>(EnemyClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
 		if (Enemy)
@@ -288,8 +274,6 @@ void AZTDWaveSpawner::SpawnEnemies()
 			Enemy->OnUnitDestroyed.AddDynamic(this, &AZTDWaveSpawner::OnEnemyDestroyed);
 			ActiveEnemies.Add(Enemy);
 			EnemiesAlive++;
-			UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: %s spawned successfully! Speed: %.1f, FireRate: %.2f, HP: %.0f, Power: %.1f, Points: %d"), 
-				*EnemyType, EnemySpeed, EnemyFireRate, EnemyHP, EnemyPower, PointsOnKill);
 		}
 		else
 		{
@@ -297,7 +281,6 @@ void AZTDWaveSpawner::SpawnEnemies()
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("WaveSpawner: Finished spawning wave %d. Total enemies: %d"), CurrentWave, EnemiesAlive);
 }
 
 FVector AZTDWaveSpawner::GetSpawnLocation(int32 Index, int32 TotalCount, float SpawnDistance, float Height) const

@@ -164,7 +164,6 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (HPText)
 	{
 		HPText->SetText(FText::FromString(FString::Printf(TEXT("HP: %.0f"), TargetUnit->CurrentHP)));
-		UE_LOG(LogTemp, Warning, TEXT("RefreshStats - Setting HP text to: %.0f"), TargetUnit->CurrentHP);
 	}
 
 	int32 HPCost = TargetUnit->GetHPUpgradeCost();
@@ -175,7 +174,6 @@ void UZTDUnitMenuWidget::RefreshStats()
 	if (HPCostText)
 	{
 		HPCostText->SetText(FText::FromString(FString::Printf(TEXT("Upgrade = %d"), HPCost)));
-		UE_LOG(LogTemp, Warning, TEXT("RefreshStats - Setting HP cost to: %d"), HPCost);
 	}
 	if (FireRateCostText)
 	{
@@ -222,16 +220,12 @@ void UZTDUnitMenuWidget::OnUpgradeHPClicked()
 	int32 PointsBefore = GM->PlayerPoints;
 	float HPBefore = TargetUnit->CurrentHP;
 	
-	// Debug output
-	UE_LOG(LogTemp, Warning, TEXT("HP Upgrade - Before: Points=%d, HP=%.0f, Cost=%d"), PointsBefore, HPBefore, Cost);
 	
 	if (GM->PlayerPoints >= Cost && TargetUnit->UpgradeHP(GM->PlayerPoints))
 	{
 		// Broadcast points change immediately
 		GM->OnPointsChanged.Broadcast(GM->PlayerPoints);
 		
-		// Debug output after upgrade
-		UE_LOG(LogTemp, Warning, TEXT("HP Upgrade - After: Points=%d, HP=%.0f"), GM->PlayerPoints, TargetUnit->CurrentHP);
 		
 		// Get player controller to close and reopen menu
 		AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
@@ -250,7 +244,6 @@ void UZTDUnitMenuWidget::OnUpgradeHPClicked()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HP Upgrade Failed"));
 	}
 }
 

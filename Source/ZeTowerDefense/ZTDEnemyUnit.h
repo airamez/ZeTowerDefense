@@ -6,7 +6,6 @@
 
 class AZTDBase;
 class AZTDDefenderUnit;
-class UMovementComponent;
 
 UCLASS(Blueprintable)
 class ZETOWERDEFENSE_API AZTDEnemyUnit : public AZTDUnitBase
@@ -38,9 +37,7 @@ public:
 	// Called by a defender when it fires at this enemy
 	void NotifyAttackedBy(AZTDDefenderUnit* Attacker);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UMovementComponent* MovementComponent = nullptr;
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void InitializeStats(float InSpeed, float InFireRate, float InHP, float InPower, float InAttackRange);
 

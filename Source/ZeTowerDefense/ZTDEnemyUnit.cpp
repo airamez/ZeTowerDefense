@@ -3,29 +3,11 @@
 #include "ZTDDefenderUnit.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 AZTDEnemyUnit::AZTDEnemyUnit()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Add movement component for better ground following
-	MovementComponent = CreateDefaultSubobject<UCharacterMovementComponent>(TEXT("MovementComponent"));
-	if (MovementComponent)
-	{
-		UCharacterMovementComponent* CharMovement = Cast<UCharacterMovementComponent>(MovementComponent);
-		if (CharMovement)
-		{
-			CharMovement->bOrientRotationToMovement = false;
-			CharMovement->bUseControllerDesiredRotation = false;
-			CharMovement->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
-			CharMovement->GravityScale = 1.0f;
-			CharMovement->AirControl = 0.2f;
-			CharMovement->GroundFriction = 3.0f;
-			CharMovement->SetComponentTickEnabled(false); // Disable tick to prevent conflicts
-			CharMovement->SetMovementMode(MOVE_None); // Disable movement
-		}
-	}
 }
 
 void AZTDEnemyUnit::BeginPlay()
@@ -130,16 +112,6 @@ void AZTDEnemyUnit::FindTarget()
 	AZTDDefenderUnit* ClosestDefender = FindClosestDefender();
 	CurrentTarget = ClosestDefender;
 	
-	// Debug: Check all tanks to see if any are targeting placement previews
-	if (GetName().Contains(TEXT("Tank_")) && CurrentTarget)
-	{
-		AZTDDefenderUnit* DefenderTarget = Cast<AZTDDefenderUnit>(CurrentTarget);
-		if (DefenderTarget && DefenderTarget->bIsPlacementPreview)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s is targeting PLACEMENT PREVIEW: %s"), 
-				*GetName(), *CurrentTarget->GetName());
-		}
-	}
 }
 
 void AZTDEnemyUnit::NotifyAttackedBy(AZTDDefenderUnit* Attacker)
@@ -158,15 +130,10 @@ void AZTDEnemyUnit::MoveTowardBase(float DeltaTime)
 {
 	if (!TargetBase) return;
 
-	// Debug logging
-	UE_LOG(LogTemp, Warning, TEXT("Enemy %s moving toward base with Speed: %.1f"), *GetName(), Speed);
 
 	FVector Direction = (TargetBase->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FVector NewLocation = GetActorLocation() + Direction * Speed * DeltaTime;
 
-	// Debug logging
-	UE_LOG(LogTemp, Warning, TEXT("Enemy %s: CurrentPos: %s, NewPos: %s, DeltaTime: %.3f"), 
-		*GetName(), *GetActorLocation().ToString(), *NewLocation.ToString(), DeltaTime);
 
 	// Ground detection - trace down from proposed position
 	FHitResult GroundHit;
