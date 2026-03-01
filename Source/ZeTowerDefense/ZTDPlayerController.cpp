@@ -27,7 +27,6 @@ AZTDPlayerController::AZTDPlayerController()
 	// Set default widget classes (these will be created programmatically)
 	BuildMenuWidgetClass = UZTDBuildMenuWidget::StaticClass();
 	UnitMenuWidgetClass = UZTDUnitMenuWidget::StaticClass();
-	PauseMenuWidgetClass = UZTDPauseMenuWidget::StaticClass();
 	WaveSummaryWidgetClass = UZTDWaveSummaryWidget::StaticClass();
 	GameOverWidgetClass = UZTDGameOverWidget::StaticClass();
 	WavePauseWidgetClass = UZTDWavePauseWidget::StaticClass();
@@ -69,7 +68,8 @@ void AZTDPlayerController::BeginPlay()
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
 
-	// Build menu will be created when instructions are dismissed (HandleContinue)
+	// Show initial instructions for new game
+	ShowInstructions();
 }
 
 void AZTDPlayerController::SetupInputComponent()
@@ -213,8 +213,8 @@ void AZTDPlayerController::HandleEscape()
 		return;
 	}
 
-	// Show instructions instead of just pausing
-	ShowInstructions();
+	// Pause the game to show HUD instructions screen
+	GM->PauseGame();
 }
 
 void AZTDPlayerController::HandleContinue()
@@ -228,25 +228,14 @@ void AZTDPlayerController::HandleContinue()
 		UE_LOG(LogTemp, Warning, TEXT("Dismissing instructions, creating build menu"));
 		HideInstructions();
 		ShowBuildMenu();
-		GM->PauseGame(); // Pause the game after dismissing instructions
 		return;
 	}
 
-	// Also create build menu when entering BuildPhase (but not when continuing from wave summary)
-	if (GM->CurrentGameState == EZTDGameState::BuildPhase && !BuildMenuWidget && (!InstructionsWidget || !InstructionsWidget->IsInViewport()) && !bSkipInstructionsOnNextBuildPhase)
+	// Also create build menu when entering BuildPhase
+	if (GM->CurrentGameState == EZTDGameState::BuildPhase && !BuildMenuWidget && (!InstructionsWidget || !InstructionsWidget->IsInViewport()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Entering BuildPhase, creating build menu (skip flag: %d)"), bSkipInstructionsOnNextBuildPhase);
+		UE_LOG(LogTemp, Warning, TEXT("Entering BuildPhase, creating build menu"));
 		ShowBuildMenu();
-	}
-	else if (GM->CurrentGameState == EZTDGameState::BuildPhase && bSkipInstructionsOnNextBuildPhase)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Skipping build menu creation due to skip flag"));
-	}
-
-	// Reset the flag after checking
-	if (bSkipInstructionsOnNextBuildPhase)
-	{
-		bSkipInstructionsOnNextBuildPhase = false;
 	}
 
 	if (GM->CurrentGameState == EZTDGameState::Paused)
@@ -255,11 +244,7 @@ void AZTDPlayerController::HandleContinue()
 	}
 	else if (GM->CurrentGameState == EZTDGameState::WaveSummary)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Dismissing wave summary, setting skip flag"));
 		GM->DismissWaveSummary();
-		// Don't show instructions when starting a new wave - just start the wave
-		// Set a flag to prevent BuildPhase logic from showing instructions
-		bSkipInstructionsOnNextBuildPhase = true;
 	}
 	else if (GM->CurrentGameState == EZTDGameState::BuildPhase)
 	{
@@ -290,6 +275,13 @@ void AZTDPlayerController::HandleSpace()
 
 void AZTDPlayerController::ShowBuildMenu()
 {
+	// Don't show build menu if first unit has already been placed
+	if (bFirstUnitPlaced)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Skipping build menu show - first unit already placed"));
+		return;
+	}
+
 	// Use Blueprint class if available, otherwise fall back to programmatic
 	TSubclassOf<UUserWidget> WidgetClassToUse = BuildMenuBlueprintClass ? BuildMenuBlueprintClass : BuildMenuWidgetClass;
 	
@@ -305,7 +297,7 @@ void AZTDPlayerController::ShowBuildMenu()
 		FTimerHandle DelayTimer;
 		GetWorld()->GetTimerManager().SetTimer(DelayTimer, [this]()
 		{
-			if (BuildMenuWidget)
+			if (BuildMenuWidget && !bFirstUnitPlaced) // Check flag again in case unit was placed during delay
 			{
 				// Try multiple methods to show the widget
 				UE_LOG(LogTemp, Warning, TEXT("Attempting to show build menu with multiple methods"));
@@ -325,7 +317,7 @@ void AZTDPlayerController::ShowBuildMenu()
 				FTimerHandle RetryTimer;
 				GetWorld()->GetTimerManager().SetTimer(RetryTimer, [this]()
 				{
-					if (BuildMenuWidget)
+					if (BuildMenuWidget && !bFirstUnitPlaced) // Check flag again
 					{
 						BuildMenuWidget->RemoveFromViewport();
 						BuildMenuWidget->AddToViewport(9999);
@@ -337,10 +329,16 @@ void AZTDPlayerController::ShowBuildMenu()
 				// Method 4: Add a persistent visibility timer
 				GetWorld()->GetTimerManager().SetTimer(BuildMenuVisibilityTimer, [this]()
 				{
-					if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
+					if (BuildMenuWidget && BuildMenuWidget->IsInViewport() && !bFirstUnitPlaced) // Check flag every time
 					{
 						// Force visibility every frame
 						BuildMenuWidget->SetVisibility(ESlateVisibility::Visible);
+					}
+					else if (bFirstUnitPlaced && BuildMenuWidget && BuildMenuWidget->IsInViewport())
+					{
+						// Stop trying to show build menu and clear the timer
+						UE_LOG(LogTemp, Warning, TEXT("First unit placed, stopping build menu visibility timer"));
+						GetWorld()->GetTimerManager().ClearTimer(BuildMenuVisibilityTimer);
 					}
 				}, 0.1f, true); // Every 100ms, persistent
 			}
@@ -440,6 +438,14 @@ bool AZTDPlayerController::TryPlaceUnit()
 	{
 		// Clear placement preview flag - this is a real unit
 		NewUnit->bIsPlacementPreview = false;
+		
+		// Set flag that first unit has been placed
+		if (!bFirstUnitPlaced)
+		{
+			bFirstUnitPlaced = true;
+			UE_LOG(LogTemp, Warning, TEXT("First unit placed, stopping build menu visibility attempts"));
+		}
+		
 		CancelBuilding();
 		return true;
 	}
@@ -539,29 +545,6 @@ void AZTDPlayerController::HideUnitMenu()
 		UnitMenuWidget->RemoveFromParent();
 	}
 	SelectedDefender = nullptr;
-}
-
-void AZTDPlayerController::ShowPauseMenu()
-{
-	if (PauseMenuWidgetClass && !PauseMenuWidget)
-	{
-		PauseMenuWidget = CreateWidget<UZTDPauseMenuWidget>(this, PauseMenuWidgetClass);
-	}
-
-	if (PauseMenuWidget)
-	{
-		PauseMenuWidget->AddToViewport(20);
-	}
-	bIsPaused = true;
-}
-
-void AZTDPlayerController::HidePauseMenu()
-{
-	if (PauseMenuWidget)
-	{
-		PauseMenuWidget->RemoveFromParent();
-	}
-	bIsPaused = false;
 }
 
 void AZTDPlayerController::ShowWaveSummary(int32 WaveNumber, int32 EnemiesDestroyed, float BaseHP, int32 Points)

@@ -155,16 +155,8 @@ float AZTDGameMode::GetBaseHP() const
 
 void AZTDGameMode::OnWaveComplete(int32 WaveNumber)
 {
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-	SetGameState(EZTDGameState::WaveSummary);
-
-	// Show wave summary on player controller
-	AZTDPlayerController* PC = Cast<AZTDPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PC && WaveSpawner)
-	{
-		float BaseHP = GameBase ? GameBase->CurrentHP : 0.0f;
-		PC->ShowWaveSummary(WaveNumber, WaveSpawner->EnemiesKilledThisWave, BaseHP, PlayerPoints);
-	}
+	// Don't pause and don't show summary - go directly to build phase
+	SetGameState(EZTDGameState::BuildPhase);
 }
 
 void AZTDGameMode::OnEnemyKilled(AZTDEnemyUnit* KilledEnemy)

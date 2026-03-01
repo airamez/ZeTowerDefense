@@ -45,12 +45,13 @@ void UZTDInstructionsWidget::NativeConstruct()
 	InstructionsText->SetText(FText::FromString(
 		TEXT("Defend your base from waves of enemies!\n\n")
 		TEXT("CONTROLS:\n")
-		TEXT("  Click   - Place Defender\n")
-		TEXT("  RClick  - Cancel Building\n")
+		TEXT("  A, D    - Move camera Left/Right\n")
+		TEXT("  W, S    - Move camera Forward/Backward\n")
 		TEXT("  ESC     - Pause Game\n")
-		TEXT("  C       - Continue/Start Wave\n\n")
+		TEXT("  C       - Continue/Start Wave\n")
+		TEXT("  X       - Close Game\n\n")
 		TEXT("GAMEPLAY:\n")
-		TEXT("  Build defenders using the always-visible build menu.\n")
+		TEXT("  Use the Build Menu at bottom left to build defenses.\n")
 		TEXT("  Press C to start the wave when ready.\n")
 		TEXT("  Earn points by destroying enemies.\n")
 		TEXT("  Don't let enemies reach your base!\n\n")
@@ -111,6 +112,28 @@ void UZTDInstructionsWidget::UpdateInstructions(const FString& NewTitle, const F
 	}
 	if (InstructionsText)
 	{
-		InstructionsText->SetText(FText::FromString(NewInstructions));
+		// If no custom instructions provided, use the updated default format
+		if (NewInstructions.IsEmpty())
+		{
+			InstructionsText->SetText(FText::FromString(
+				TEXT("Defend your base from waves of enemies!\n\n")
+				TEXT("CONTROLS:\n")
+				TEXT("  A, D    - Move camera Left/Right\n")
+				TEXT("  W, S    - Move camera Forward/Backward\n")
+				TEXT("  ESC     - Pause Game\n")
+				TEXT("  C       - Continue/Start Wave\n")
+				TEXT("  X       - Close Game\n\n")
+				TEXT("GAMEPLAY:\n")
+				TEXT("  Use the Build Menu at bottom left to build defenses.\n")
+				TEXT("  Press C to start the wave when ready.\n")
+				TEXT("  Earn points by destroying enemies.\n")
+				TEXT("  Don't let enemies reach your base!\n\n")
+				TEXT("Good luck, Commander!")
+			));
+		}
+		else
+		{
+			InstructionsText->SetText(FText::FromString(NewInstructions));
+		}
 	}
 }

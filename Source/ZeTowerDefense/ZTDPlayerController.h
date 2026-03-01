@@ -8,7 +8,6 @@ class AZTDDefenderUnit;
 class AZTDGameMode;
 class UZTDBuildMenuWidget;
 class UZTDUnitMenuWidget;
-class UZTDPauseMenuWidget;
 class UZTDWaveSummaryWidget;
 class UZTDGameOverWidget;
 class UZTDWavePauseWidget;
@@ -32,28 +31,26 @@ public:
 
 	// Widget classes to spawn (set in Blueprint or defaults)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UZTDUnitMenuWidget> UnitMenuWidgetClass;
+	TSubclassOf<UZTDBuildMenuWidget> BuildMenuWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UZTDPauseMenuWidget> PauseMenuWidgetClass;
+	TSubclassOf<UZTDUnitMenuWidget> UnitMenuWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<UZTDWaveSummaryWidget> WaveSummaryWidgetClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UZTDWavePauseWidget> WavePauseWidgetClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UZTDGameOverWidget> GameOverWidgetClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> BuildMenuBlueprintClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UZTDBuildMenuWidget> BuildMenuWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<UZTDWavePauseWidget> WavePauseWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UZTDInstructionsWidget> InstructionsWidgetClass;
+
+	// Blueprint build menu widget class
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> BuildMenuBlueprintClass;
 
 	// Defender classes to build
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building")
@@ -84,12 +81,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void HideUnitMenu();
-
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowPauseMenu();
-
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void HidePauseMenu();
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowWaveSummary(int32 WaveNumber, int32 EnemiesDestroyed, float BaseHP, int32 Points);
@@ -140,9 +131,6 @@ protected:
 	UZTDUnitMenuWidget* UnitMenuWidget = nullptr;
 
 	UPROPERTY()
-	UZTDPauseMenuWidget* PauseMenuWidget = nullptr;
-
-	UPROPERTY()
 	UZTDWaveSummaryWidget* WaveSummaryWidget = nullptr;
 
 	UPROPERTY()
@@ -169,4 +157,5 @@ protected:
 	bool bIsPaused = false;
 	bool bIsWaveSummaryOpen = false;
 	bool bSkipInstructionsOnNextBuildPhase = false;
+	bool bFirstUnitPlaced = false; // Flag to stop showing build menu after first unit
 };

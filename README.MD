@@ -354,23 +354,24 @@ Upgrade costs follow Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89...
 
 | Action | Key/Button | Function |
 |--------|------------|----------|
-| **Move** | WASD/Controller | Free movement |
-| **Select Unit** | Left Mouse | Select for upgrade |
-| **Cancel Building** | Right Mouse | Cancel current placement |
+| **Camera Left/Right** | A/D | Move camera horizontally |
+| **Camera Forward/Back** | W/S | Move camera vertically |
 | **Instructions** | Escape | Show instructions screen |
 | **Continue** | C | Resume game / Start wave |
 | **Exit** | X (when paused) | Leave game |
+
+### Building System
+- **Build Menu**: Located at bottom left corner
+- **Unit Selection**: Click buttons in build menu to select defenders
+- **Unit Placement**: Left-click on map to place selected unit
 
 ## 📊 Game States
 
 ### Wave Completion
 When all enemies in a wave are destroyed:
 - Game pauses
-- Summary screen displays:
-  - Wave number
-  - Enemies destroyed
-  - Base HP remaining
-  - Points collected
+- Instructions screen displays with next wave information
+- Press C to continue to build phase
 
 ### Base Health
 - **Starting HP**: 100
@@ -401,7 +402,7 @@ When all enemies in a wave are destroyed:
 2. **Build Phase**: Place defensive units using points from always-visible build menu
 3. **Wave Start**: Press C to start the wave
 4. **Combat**: Units engage automatically
-5. **Wave End**: Summary screen displays, press C to continue without showing instructions
+5. **Wave End**: Instructions screen appears with next wave info, press C to continue
 6. **Upgrade Phase**: Improve units between waves
 7. **Repeat**: Next wave with increased difficulty
 8. **Game Over**: Base destroyed or player exits

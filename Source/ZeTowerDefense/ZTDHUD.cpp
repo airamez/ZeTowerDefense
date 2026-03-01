@@ -81,36 +81,57 @@ void AZTDHUD::DrawGameScreen()
 		
 		// Camera controls section
 		DrawLeftAlignedText(TEXT("CAMERA CONTROLS"), LeftMargin, CY - 130.0f, FLinearColor(0.8f, 0.8f, 1.0f, 1.0f), 1.1f);
-		DrawLeftAlignedText(TEXT("W, A, S, D - Move camera horizontally"), LeftMargin, CY - 100.0f, TextColor, 1.0f);
-		DrawLeftAlignedText(TEXT("Q, E - Move camera up/down"), LeftMargin, CY - 75.0f, TextColor, 1.0f);
-		DrawLeftAlignedText(TEXT("Left Mouse Button - Rotate camera view"), LeftMargin, CY - 50.0f, TextColor, 1.0f);
+		DrawLeftAlignedText(TEXT("A, D - Move camera Left/Right"), LeftMargin, CY - 100.0f, TextColor, 1.0f);
+		DrawLeftAlignedText(TEXT("W, S - Move camera Forward/Backward"), LeftMargin, CY - 75.0f, TextColor, 1.0f);
 		
 		// Building section
-		DrawLeftAlignedText(TEXT("BUILDING CONTROLS"), LeftMargin, CY, FLinearColor(0.8f, 0.8f, 1.0f, 1.0f), 1.1f);
-		DrawLeftAlignedText(TEXT("R - Open/Close Build Menu"), LeftMargin, CY + 25.0f, TextColor, 1.0f);
-		DrawLeftAlignedText(TEXT("Click Tank/Heli icon - Select unit type"), LeftMargin, CY + 50.0f, TextColor, 1.0f);
-		DrawLeftAlignedText(TEXT("Left Click on ground - Place defender"), LeftMargin, CY + 75.0f, TextColor, 1.0f);
-		DrawLeftAlignedText(TEXT("Right Click - Cancel placement"), LeftMargin, CY + 100.0f, TextColor, 1.0f);
+		DrawLeftAlignedText(TEXT("BUILDING"), LeftMargin, CY - 25.0f, FLinearColor(0.8f, 0.8f, 1.0f, 1.0f), 1.1f);
+		DrawLeftAlignedText(TEXT("Use the Build Menu at bottom left to build defenses"), LeftMargin, CY, TextColor, 1.0f);
 		
 		// Wave info section
 		FString WaveText = FString::Printf(TEXT("WAVE %d"), GM->CurrentWaveNumber + 1);
-		DrawLeftAlignedText(WaveText, LeftMargin, CY + 140.0f, TextColor, 1.8f);
+		DrawLeftAlignedText(WaveText, LeftMargin, CY + 40.0f, TextColor, 1.8f);
 		
 		int32 TankCount = GM->WaveSpawner ? GM->WaveSpawner->GetTankCountForWave(GM->CurrentWaveNumber + 1) : 0;
 		int32 HeliCount = GM->WaveSpawner ? GM->WaveSpawner->GetHeliCountForWave(GM->CurrentWaveNumber + 1) : 0;
 		FString EnemyText = FString::Printf(TEXT("Incoming: %d Tanks, %d Helis"), TankCount, HeliCount);
-		DrawLeftAlignedText(EnemyText, LeftMargin, CY + 170.0f, TextColor, 1.2f);
+		DrawLeftAlignedText(EnemyText, LeftMargin, CY + 70.0f, TextColor, 1.2f);
 		
 		// Start prompt
 		DrawLeftAlignedText(TEXT("Press C to start the wave"), LeftMargin, CY + 220.0f, PromptColor, 1.4f);
+		DrawLeftAlignedText(TEXT("Press X to close game"), LeftMargin, CY + 250.0f, TextColor, 1.0f);
 	}
 	else if (GM->CurrentGameState == EZTDGameState::Paused)
 	{
-		// Pause screen
-		DrawCenteredText(TEXT("GAME PAUSED"), CY - 100.0f, TitleColor, 2.5f);
-		DrawCenteredText(TEXT("Defend your base from enemy waves!"), CY - 40.0f, TextColor, 1.0f);
-		DrawCenteredText(TEXT("R - Build Menu  |  Click - Place  |  ESC - Pause"), CY, TextColor, 1.0f);
-		DrawCenteredText(TEXT("Press C to Resume  |  X to Quit"), CY + 60.0f, PromptColor, 1.1f);
+		// Show exactly the same as wave start screen
+		float LeftMargin = ScreenWidth * 0.15f; // 15% from left edge
+		
+		DrawLeftAlignedText(TEXT("ZE TOWER DEFENSE"), LeftMargin, CY - 250.0f, TitleColor, 2.8f);
+		
+		// Game description
+		DrawLeftAlignedText(TEXT("Defend your base from enemy waves!"), LeftMargin, CY - 180.0f, TextColor, 1.3f);
+		
+		// Camera controls section
+		DrawLeftAlignedText(TEXT("CAMERA CONTROLS"), LeftMargin, CY - 130.0f, FLinearColor(0.8f, 0.8f, 1.0f, 1.0f), 1.1f);
+		DrawLeftAlignedText(TEXT("A, D - Move camera Left/Right"), LeftMargin, CY - 100.0f, TextColor, 1.0f);
+		DrawLeftAlignedText(TEXT("W, S - Move camera Forward/Backward"), LeftMargin, CY - 75.0f, TextColor, 1.0f);
+		
+		// Building section
+		DrawLeftAlignedText(TEXT("BUILDING"), LeftMargin, CY - 25.0f, FLinearColor(0.8f, 0.8f, 1.0f, 1.0f), 1.1f);
+		DrawLeftAlignedText(TEXT("Use the Build Menu at bottom left to build defenses"), LeftMargin, CY, TextColor, 1.0f);
+		
+		// Wave info section (show current wave info like wave start)
+		FString WaveText = FString::Printf(TEXT("WAVE %d"), GM->CurrentWaveNumber + 1);
+		DrawLeftAlignedText(WaveText, LeftMargin, CY + 40.0f, TextColor, 1.8f);
+		
+		int32 TankCount = GM->WaveSpawner ? GM->WaveSpawner->GetTankCountForWave(GM->CurrentWaveNumber + 1) : 0;
+		int32 HeliCount = GM->WaveSpawner ? GM->WaveSpawner->GetHeliCountForWave(GM->CurrentWaveNumber + 1) : 0;
+		FString EnemyText = FString::Printf(TEXT("Incoming: %d Tanks, %d Helis"), TankCount, HeliCount);
+		DrawLeftAlignedText(EnemyText, LeftMargin, CY + 70.0f, TextColor, 1.2f);
+		
+		// Resume prompt (same as start prompt)
+		DrawLeftAlignedText(TEXT("Press C to continue"), LeftMargin, CY + 220.0f, PromptColor, 1.4f);
+		DrawLeftAlignedText(TEXT("Press X to close game"), LeftMargin, CY + 250.0f, TextColor, 1.0f);
 	}
 	else if (GM->CurrentGameState == EZTDGameState::GameOver)
 	{
