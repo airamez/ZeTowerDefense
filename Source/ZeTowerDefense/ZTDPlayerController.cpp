@@ -496,7 +496,10 @@ FVector AZTDPlayerController::GetPlacementLocation() const
 
 	if (HitResult.bBlockingHit)
 	{
-		return HitResult.Location;
+		FVector Location = HitResult.Location;
+		// Apply same height adjustment as used in TryPlaceUnit to keep preview above ground
+		Location.Z += 100.0f;
+		return Location;
 	}
 
 	return FVector::ZeroVector;
