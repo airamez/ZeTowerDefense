@@ -225,9 +225,14 @@ void AZTDPlayerController::HandleContinue()
 	// Check if we're dismissing instructions (opening screen)
 	if (InstructionsWidget && InstructionsWidget->IsInViewport())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Dismissing instructions, creating build menu"));
+		UE_LOG(LogTemp, Warning, TEXT("Dismissing instructions, starting wave directly"));
 		HideInstructions();
 		ShowBuildMenu();
+		// Start the wave directly on first C press
+		if (GM->CurrentGameState == EZTDGameState::BuildPhase)
+		{
+			GM->ActuallyStartWave();
+		}
 		return;
 	}
 
@@ -267,10 +272,8 @@ void AZTDPlayerController::HandleExit()
 
 void AZTDPlayerController::HandleSpace()
 {
-	AZTDGameMode* GM = GetZTDGameMode();
-	if (!GM) return;
-
-	// Space key is no longer used - C key handles everything
+	// Space key now works as continue (same as C key)
+	HandleContinue();
 }
 
 void AZTDPlayerController::ShowBuildMenu()

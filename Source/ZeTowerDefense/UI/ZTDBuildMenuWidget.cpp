@@ -34,7 +34,7 @@ void UZTDBuildMenuWidget::NativeConstruct()
 	{
 		PSlot->SetAnchors(FAnchors(0.0f, 1.0f, 0.0f, 1.0f));
 		PSlot->SetAlignment(FVector2D(0.0f, 1.0f));
-		PSlot->SetSize(FVector2D(400.0f, 180.0f)); // Doubled width from 200 to 400
+		PSlot->SetSize(FVector2D(275.0f, 180.0f)); // Added another 5% width for optimal text spacing
 		PSlot->SetPosition(FVector2D(20.0f, -20.0f));
 	}
 
@@ -72,11 +72,11 @@ void UZTDBuildMenuWidget::NativeConstruct()
 	}
 
 	// Build Tank button
-	BuildTankButton = MakeButton(TEXT("BuildTank"), TEXT("Build Tank (5 pts)"));
+	BuildTankButton = MakeButton(TEXT("BuildTank"), TEXT("Tank"));
 	TankCostText = Cast<UTextBlock>(BuildTankButton->GetChildAt(0));
 
 	// Build Heli button
-	BuildHeliButton = MakeButton(TEXT("BuildHeli"), TEXT("Build Heli (5 pts)"));
+	BuildHeliButton = MakeButton(TEXT("BuildHeli"), TEXT("Helicopter"));
 	HeliCostText = Cast<UTextBlock>(BuildHeliButton->GetChildAt(0));
 
 	// Bind button events
@@ -92,15 +92,15 @@ void UZTDBuildMenuWidget::NativeConstruct()
 		{
 			AZTDDefenderUnit* DefaultTank = PC->DefenderTankClass->GetDefaultObject<AZTDDefenderUnit>();
 			int32 TankCost = DefaultTank ? DefaultTank->SpawnCost : 5;
-			TankCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Tank (%d pts)"), TankCost)));
+			TankCostText->SetText(FText::FromString(FString::Printf(TEXT("Tank = %d points"), TankCost)));
 		}
 		
 		// Get Heli cost
 		if (HeliCostText && PC->DefenderHeliClass)
 		{
 			AZTDDefenderUnit* DefaultHeli = PC->DefenderHeliClass->GetDefaultObject<AZTDDefenderUnit>();
-			int32 HeliCost = DefaultHeli ? DefaultHeli->SpawnCost : 5;
-			HeliCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Heli (%d pts)"), HeliCost)));
+			int32 HeliCost = DefaultHeli ? DefaultHeli->SpawnCost : 15;
+			HeliCostText->SetText(FText::FromString(FString::Printf(TEXT("Heli = %d points"), HeliCost)));
 		}
 	}
 	

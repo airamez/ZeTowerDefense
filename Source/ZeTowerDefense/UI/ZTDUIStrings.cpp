@@ -13,8 +13,8 @@ const FString UZTDUIStrings::WaveInProgressTemplate = TEXT("Wave In Progress");
 const FString UZTDUIStrings::WaveSummaryTemplate = TEXT("Wave Complete - Press C");
 const FString UZTDUIStrings::PausedTemplate = TEXT("Game Paused");
 const FString UZTDUIStrings::GameOverTemplate = TEXT("Game Over");
-const FString UZTDUIStrings::BuildTankTemplate = TEXT("Build Tank ({0})");
-const FString UZTDUIStrings::BuildHeliTemplate = TEXT("Build Heli ({0})");
+const FString UZTDUIStrings::BuildTankTemplate = TEXT("Tank ({0}) pts");
+const FString UZTDUIStrings::BuildHeliTemplate = TEXT("Heli ({0}) pts");
 const FString UZTDUIStrings::CancelTemplate = TEXT("Cancel");
 
 FString UZTDUIStrings::GetWavePauseTitle(int32 WaveNumber)

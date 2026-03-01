@@ -97,9 +97,9 @@ void AZTDHUD::DrawGameScreen()
 		FString EnemyText = FString::Printf(TEXT("Incoming: %d Tanks, %d Helis"), TankCount, HeliCount);
 		DrawLeftAlignedText(EnemyText, LeftMargin, CY + 70.0f, TextColor, 1.2f);
 		
-		// Start prompt
-		DrawLeftAlignedText(TEXT("Press C to start the wave"), LeftMargin, CY + 220.0f, PromptColor, 1.4f);
-		DrawLeftAlignedText(TEXT("Press X to close game"), LeftMargin, CY + 250.0f, TextColor, 1.0f);
+		// Start prompt - centered horizontally
+		DrawCenteredText(TEXT("Press C or Space to start the wave"), CY + 220.0f, PromptColor, 1.4f);
+		DrawCenteredText(TEXT("Press X to close game"), CY + 250.0f, PromptColor, 1.4f);
 	}
 	else if (GM->CurrentGameState == EZTDGameState::Paused)
 	{
@@ -129,9 +129,9 @@ void AZTDHUD::DrawGameScreen()
 		FString EnemyText = FString::Printf(TEXT("Incoming: %d Tanks, %d Helis"), TankCount, HeliCount);
 		DrawLeftAlignedText(EnemyText, LeftMargin, CY + 70.0f, TextColor, 1.2f);
 		
-		// Resume prompt (same as start prompt)
-		DrawLeftAlignedText(TEXT("Press C to continue"), LeftMargin, CY + 220.0f, PromptColor, 1.4f);
-		DrawLeftAlignedText(TEXT("Press X to close game"), LeftMargin, CY + 250.0f, TextColor, 1.0f);
+		// Resume prompt - centered horizontally
+		DrawCenteredText(TEXT("Press C or Space to continue"), CY + 220.0f, PromptColor, 1.4f);
+		DrawCenteredText(TEXT("Press X to close game"), CY + 250.0f, PromptColor, 1.4f);
 	}
 	else if (GM->CurrentGameState == EZTDGameState::GameOver)
 	{
