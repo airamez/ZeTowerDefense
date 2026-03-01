@@ -316,7 +316,7 @@ These parameters can be adjusted in the Wave Spawner settings to create differen
 ## 🏗️ Building System
 
 ### Unit Placement
-- **Build Menu**: Right-click to open
+- **Build Menu**: Always visible in bottom-left corner
 - **Unit Selection**: Select desired unit type from build menu
 - **Unit Placement**: Left-click to place the selected unit on the map
 - **Available Units**: Heli and Tank (used as defensive towers)
@@ -355,10 +355,10 @@ Upgrade costs follow Fibonacci sequence: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89...
 | Action | Key/Button | Function |
 |--------|------------|----------|
 | **Move** | WASD/Controller | Free movement |
-| **Build Menu** | Right Mouse | Open unit selection |
 | **Select Unit** | Left Mouse | Select for upgrade |
-| **Pause** | Escape | Pause game |
-| **Continue** | C (when paused) | Resume game |
+| **Cancel Building** | Right Mouse | Cancel current placement |
+| **Instructions** | Escape | Show instructions screen |
+| **Continue** | C | Resume game / Start wave |
 | **Exit** | X (when paused) | Leave game |
 
 ## 📊 Game States
@@ -397,11 +397,11 @@ When all enemies in a wave are destroyed:
 
 ## 🎮 Game Flow
 
-1. **Start**: Player begins with base and initial points
-2. **Build Phase**: Place defensive units using points
-3. **Wave Start**: Enemies spawn and advance
+1. **Start**: Player begins with base and initial points, build menu always visible
+2. **Build Phase**: Place defensive units using points from always-visible build menu
+3. **Wave Start**: Press C to start the wave
 4. **Combat**: Units engage automatically
-5. **Wave End**: Summary and point collection
+5. **Wave End**: Summary screen displays, press C to continue without showing instructions
 6. **Upgrade Phase**: Improve units between waves
 7. **Repeat**: Next wave with increased difficulty
 8. **Game Over**: Base destroyed or player exits

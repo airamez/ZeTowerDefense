@@ -32,9 +32,6 @@ public:
 
 	// Widget classes to spawn (set in Blueprint or defaults)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UZTDBuildMenuWidget> BuildMenuWidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<UZTDUnitMenuWidget> UnitMenuWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
@@ -48,6 +45,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UZTDGameOverWidget> GameOverWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> BuildMenuBlueprintClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UZTDBuildMenuWidget> BuildMenuWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UZTDInstructionsWidget> InstructionsWidgetClass;
@@ -131,7 +134,7 @@ protected:
 	FVector GetPlacementLocation() const;
 
 	UPROPERTY()
-	UZTDBuildMenuWidget* BuildMenuWidget = nullptr;
+	UUserWidget* BuildMenuWidget = nullptr;
 
 	UPROPERTY()
 	UZTDUnitMenuWidget* UnitMenuWidget = nullptr;
@@ -157,9 +160,13 @@ protected:
 	UPROPERTY()
 	AActor* PlacementPreview = nullptr;
 
+	// Timer for forcing build menu visibility
+	FTimerHandle BuildMenuVisibilityTimer;
+
 	EZTDBuildType CurrentBuildType = EZTDBuildType::None;
 	bool bIsBuildMenuOpen = false;
 	bool bIsPlacing = false;
 	bool bIsPaused = false;
 	bool bIsWaveSummaryOpen = false;
+	bool bSkipInstructionsOnNextBuildPhase = false;
 };

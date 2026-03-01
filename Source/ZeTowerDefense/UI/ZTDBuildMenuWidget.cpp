@@ -16,23 +16,26 @@ void UZTDBuildMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (!WidgetTree) return;
+	if (!WidgetTree) 
+	{
+		return;
+	}
 
 	// Root canvas
 	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("Canvas"));
 	WidgetTree->RootWidget = Canvas;
-
-	// Background border centered
+	
+	// Background border positioned in bottom-left corner
 	UBorder* Border = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("Border"));
 	Border->SetBrushColor(FLinearColor(0.05f, 0.05f, 0.05f, 0.85f));
 	Border->SetPadding(FMargin(10.0f));
 	Canvas->AddChild(Border);
 	if (UCanvasPanelSlot* PSlot = Cast<UCanvasPanelSlot>(Border->Slot))
 	{
-		PSlot->SetAnchors(FAnchors(0.5f, 0.5f, 0.5f, 0.5f));
-		PSlot->SetAlignment(FVector2D(0.5f, 0.5f));
-		PSlot->SetSize(FVector2D(350.0f, 220.0f));
-		PSlot->SetPosition(FVector2D(0.0f, 0.0f));
+		PSlot->SetAnchors(FAnchors(0.0f, 1.0f, 0.0f, 1.0f));
+		PSlot->SetAlignment(FVector2D(0.0f, 1.0f));
+		PSlot->SetSize(FVector2D(400.0f, 180.0f)); // Doubled width from 200 to 400
+		PSlot->SetPosition(FVector2D(20.0f, -20.0f));
 	}
 
 	// Vertical box inside border
@@ -57,6 +60,17 @@ void UZTDBuildMenuWidget::NativeConstruct()
 		return Btn;
 	};
 
+	// "Build" header text
+	UTextBlock* HeaderText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HeaderText"));
+	HeaderText->SetText(FText::FromString(TEXT("Build")));
+	HeaderText->SetJustification(ETextJustify::Center);
+	HeaderText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	VBox->AddChild(HeaderText);
+	if (UVerticalBoxSlot* HSlot = Cast<UVerticalBoxSlot>(HeaderText->Slot))
+	{
+		HSlot->SetPadding(FMargin(2.0f, 2.0f, 2.0f, 6.0f));
+	}
+
 	// Build Tank button
 	BuildTankButton = MakeButton(TEXT("BuildTank"), TEXT("Build Tank (5 pts)"));
 	TankCostText = Cast<UTextBlock>(BuildTankButton->GetChildAt(0));
@@ -65,13 +79,9 @@ void UZTDBuildMenuWidget::NativeConstruct()
 	BuildHeliButton = MakeButton(TEXT("BuildHeli"), TEXT("Build Heli (5 pts)"));
 	HeliCostText = Cast<UTextBlock>(BuildHeliButton->GetChildAt(0));
 
-	// Cancel button
-	CancelButton = MakeButton(TEXT("Cancel"), TEXT("Cancel"));
-
 	// Bind button events
 	BuildTankButton->OnClicked.AddDynamic(this, &UZTDBuildMenuWidget::OnBuildTankClicked);
 	BuildHeliButton->OnClicked.AddDynamic(this, &UZTDBuildMenuWidget::OnBuildHeliClicked);
-	CancelButton->OnClicked.AddDynamic(this, &UZTDBuildMenuWidget::OnCancelClicked);
 
 	// Update costs from defender classes
 	AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
@@ -93,6 +103,9 @@ void UZTDBuildMenuWidget::NativeConstruct()
 			HeliCostText->SetText(FText::FromString(FString::Printf(TEXT("Build Heli (%d pts)"), HeliCost)));
 		}
 	}
+	
+	// Force widget to be visible at the end of construction
+	SetVisibility(ESlateVisibility::Visible);
 }
 
 void UZTDBuildMenuWidget::OnBuildTankClicked()
@@ -115,10 +128,6 @@ void UZTDBuildMenuWidget::OnBuildHeliClicked()
 
 void UZTDBuildMenuWidget::OnCancelClicked()
 {
-	AZTDPlayerController* PC = Cast<AZTDPlayerController>(GetOwningPlayer());
-	if (PC)
-	{
-		PC->HideBuildMenu();
-	}
+	// No longer used - build menu is always visible
 }
 

@@ -33,6 +33,18 @@ AZTDPlayerController::AZTDPlayerController()
 	WavePauseWidgetClass = UZTDWavePauseWidget::StaticClass();
 	InstructionsWidgetClass = UZTDInstructionsWidget::StaticClass();
 
+	// Try to find Blueprint build menu widget
+	static ConstructorHelpers::FClassFinder<UUserWidget> BuildMenuBPClassFinder(TEXT("/Game/WBP_BuildMenu"));
+	if (BuildMenuBPClassFinder.Succeeded())
+	{
+		BuildMenuBlueprintClass = BuildMenuBPClassFinder.Class;
+		UE_LOG(LogTemp, Warning, TEXT("Found Blueprint WBP_BuildMenu class in constructor"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Blueprint WBP_BuildMenu not found in constructor"));
+	}
+
 	// Set defender classes programmatically
 	static ConstructorHelpers::FClassFinder<AZTDDefenderUnit> TankClassFinder(TEXT("/Game/Blueprints/BP_DefenderTank"));
 	if (TankClassFinder.Succeeded())
@@ -56,6 +68,8 @@ void AZTDPlayerController::BeginPlay()
 	FInputModeGameAndUI InputMode;
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
+
+	// Build menu will be created when instructions are dismissed (HandleContinue)
 }
 
 void AZTDPlayerController::SetupInputComponent()
@@ -69,11 +83,6 @@ void AZTDPlayerController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Poll key states for input (compatible with Enhanced Input)
-	// Wait a few seconds for input system to be fully initialized
-	if (GetWorld() && GetWorld()->GetTimeSeconds() > 2.0f && WasInputKeyJustPressed(EKeys::R))
-	{
-		HandleBuildMenu();
-	}
 	if (WasInputKeyJustPressed(EKeys::RightMouseButton))
 	{
 		HandleRightClick();
@@ -109,30 +118,7 @@ void AZTDPlayerController::Tick(float DeltaTime)
 
 void AZTDPlayerController::HandleBuildMenu()
 {
-	AZTDGameMode* GM = GetZTDGameMode();
-	if (!GM) return;
-
-	if (GM->CurrentGameState == EZTDGameState::Paused) return;
-	if (GM->CurrentGameState == EZTDGameState::GameOver) return;
-	if (GM->CurrentGameState == EZTDGameState::WaveSummary) return;
-
-	// Allow building during wave phase - no restriction for WaveInProgress
-
-	if (bIsPlacing)
-	{
-		CancelBuilding();
-		return;
-	}
-
-	if (bIsBuildMenuOpen)
-	{
-		HideBuildMenu();
-	}
-	else
-	{
-		HideUnitMenu();
-		ShowBuildMenu();
-	}
+	// Build menu is always visible, nothing to toggle
 }
 
 void AZTDPlayerController::HandleRightClick()
@@ -154,9 +140,6 @@ void AZTDPlayerController::HandleLeftClick()
 		TryPlaceUnit();
 		return;
 	}
-
-	// If build menu is open, don't process clicks on world
-	if (bIsBuildMenuOpen) return;
 
 	// Try to select a defending unit with more forgiving click detection
 	FHitResult HitResult;
@@ -219,12 +202,6 @@ void AZTDPlayerController::HandleEscape()
 		return;
 	}
 
-	if (bIsBuildMenuOpen)
-	{
-		HideBuildMenu();
-		return;
-	}
-
 	if (GM->CurrentGameState == EZTDGameState::Paused)
 	{
 		return; // Already paused, use C to resume
@@ -236,8 +213,8 @@ void AZTDPlayerController::HandleEscape()
 		return;
 	}
 
-	// Just pause the game - HUD will show the pause screen
-	GM->PauseGame();
+	// Show instructions instead of just pausing
+	ShowInstructions();
 }
 
 void AZTDPlayerController::HandleContinue()
@@ -245,13 +222,44 @@ void AZTDPlayerController::HandleContinue()
 	AZTDGameMode* GM = GetZTDGameMode();
 	if (!GM) return;
 
+	// Check if we're dismissing instructions (opening screen)
+	if (InstructionsWidget && InstructionsWidget->IsInViewport())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dismissing instructions, creating build menu"));
+		HideInstructions();
+		ShowBuildMenu();
+		GM->PauseGame(); // Pause the game after dismissing instructions
+		return;
+	}
+
+	// Also create build menu when entering BuildPhase (but not when continuing from wave summary)
+	if (GM->CurrentGameState == EZTDGameState::BuildPhase && !BuildMenuWidget && (!InstructionsWidget || !InstructionsWidget->IsInViewport()) && !bSkipInstructionsOnNextBuildPhase)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Entering BuildPhase, creating build menu (skip flag: %d)"), bSkipInstructionsOnNextBuildPhase);
+		ShowBuildMenu();
+	}
+	else if (GM->CurrentGameState == EZTDGameState::BuildPhase && bSkipInstructionsOnNextBuildPhase)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Skipping build menu creation due to skip flag"));
+	}
+
+	// Reset the flag after checking
+	if (bSkipInstructionsOnNextBuildPhase)
+	{
+		bSkipInstructionsOnNextBuildPhase = false;
+	}
+
 	if (GM->CurrentGameState == EZTDGameState::Paused)
 	{
 		GM->ResumeGame();
 	}
 	else if (GM->CurrentGameState == EZTDGameState::WaveSummary)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("HandleContinue: Dismissing wave summary, setting skip flag"));
 		GM->DismissWaveSummary();
+		// Don't show instructions when starting a new wave - just start the wave
+		// Set a flag to prevent BuildPhase logic from showing instructions
+		bSkipInstructionsOnNextBuildPhase = true;
 	}
 	else if (GM->CurrentGameState == EZTDGameState::BuildPhase)
 	{
@@ -282,31 +290,72 @@ void AZTDPlayerController::HandleSpace()
 
 void AZTDPlayerController::ShowBuildMenu()
 {
-	if (BuildMenuWidgetClass && !BuildMenuWidget)
+	// Use Blueprint class if available, otherwise fall back to programmatic
+	TSubclassOf<UUserWidget> WidgetClassToUse = BuildMenuBlueprintClass ? BuildMenuBlueprintClass : BuildMenuWidgetClass;
+	
+	if (WidgetClassToUse && !BuildMenuWidget)
 	{
-		BuildMenuWidget = CreateWidget<UZTDBuildMenuWidget>(this, BuildMenuWidgetClass);
+		BuildMenuWidget = CreateWidget<UUserWidget>(this, WidgetClassToUse);
+		UE_LOG(LogTemp, Warning, TEXT("BuildMenuWidget created"));
 	}
 
-	if (BuildMenuWidget)
+	if (BuildMenuWidget && !BuildMenuWidget->IsInViewport())
 	{
-		BuildMenuWidget->AddToViewport(10);
-		bIsBuildMenuOpen = true;
+		// Add a 2-second delay to avoid any initialization clearing
+		FTimerHandle DelayTimer;
+		GetWorld()->GetTimerManager().SetTimer(DelayTimer, [this]()
+		{
+			if (BuildMenuWidget)
+			{
+				// Try multiple methods to show the widget
+				UE_LOG(LogTemp, Warning, TEXT("Attempting to show build menu with multiple methods"));
+				
+				// Method 1: Add to viewport with maximum z-order
+				BuildMenuWidget->AddToViewport(9999);
+				bIsBuildMenuOpen = true;
+				UE_LOG(LogTemp, Warning, TEXT("BuildMenuWidget added to viewport with z-order 9999"));
+				
+				// Method 2: Force visibility multiple times
+				for (int32 i = 0; i < 5; i++)
+				{
+					BuildMenuWidget->SetVisibility(ESlateVisibility::Visible);
+				}
+				
+				// Method 3: Try to add to viewport again after a short delay
+				FTimerHandle RetryTimer;
+				GetWorld()->GetTimerManager().SetTimer(RetryTimer, [this]()
+				{
+					if (BuildMenuWidget)
+					{
+						BuildMenuWidget->RemoveFromViewport();
+						BuildMenuWidget->AddToViewport(9999);
+						BuildMenuWidget->SetVisibility(ESlateVisibility::Visible);
+						UE_LOG(LogTemp, Warning, TEXT("Retry: Re-added BuildMenuWidget to viewport"));
+					}
+				}, 0.1f, false);
+				
+				// Method 4: Add a persistent visibility timer
+				GetWorld()->GetTimerManager().SetTimer(BuildMenuVisibilityTimer, [this]()
+				{
+					if (BuildMenuWidget && BuildMenuWidget->IsInViewport())
+					{
+						// Force visibility every frame
+						BuildMenuWidget->SetVisibility(ESlateVisibility::Visible);
+					}
+				}, 0.1f, true); // Every 100ms, persistent
+			}
+		}, 2.0f, false); // 2-second delay
 	}
 }
 
 void AZTDPlayerController::HideBuildMenu()
 {
-	if (BuildMenuWidget)
-	{
-		BuildMenuWidget->RemoveFromParent();
-	}
-	bIsBuildMenuOpen = false;
+	// Build menu is always visible - do not remove
 }
 
 void AZTDPlayerController::SelectBuildType(EZTDBuildType Type)
 {
 	CurrentBuildType = Type;
-	HideBuildMenu();
 
 	if (Type == EZTDBuildType::None)
 	{

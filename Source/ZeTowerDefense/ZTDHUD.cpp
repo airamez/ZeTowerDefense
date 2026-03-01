@@ -44,7 +44,7 @@ void AZTDHUD::DrawHUD()
 
 	// Draw normal HUD elements during gameplay
 	DrawGameplayHUD();
-	DrawCrosshair();
+	// DrawCrosshair(); // Removed crosshair
 	DrawWaveInfo();
 }
 
