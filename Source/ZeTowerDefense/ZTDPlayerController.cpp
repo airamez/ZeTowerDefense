@@ -469,44 +469,26 @@ bool AZTDPlayerController::IsValidPlacement(const FVector& Location) const
 
 	bool bHitFloor = GetWorld()->LineTraceSingleByChannel(FloorHit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 	
-	// Debug: Show if we hit floor
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, bHitFloor ? FColor::Green : FColor::Red, 
-			bHitFloor ? TEXT("Floor detected") : TEXT("No floor detected"));
-	}
-
 	if (!bHitFloor) return false;
 
 	// Check for overlapping defenders - exclude placement preview
-	float MinDistance = 100.0f; // Reduced from 150
-	int32 DefenderCount = 0;
+	float MinDistance = 300.0f; // Increased significantly to prevent overlapping
+	
 	for (TActorIterator<AZTDDefenderUnit> It(GetWorld()); It; ++It)
 	{
+		AZTDDefenderUnit* Defender = *It;
+		
 		// Skip the placement preview to prevent self-collision
-		if (*It == PlacementPreview) continue;
+		if (Defender == PlacementPreview) continue;
 		
-		DefenderCount++;
-		float Distance = FVector::Dist((*It)->GetActorLocation(), Location);
-		if (GEngine)
-		{
-			FString DebugStr = FString::Printf(TEXT("Defender %d at distance %.1f"), DefenderCount, Distance);
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, DebugStr);
-		}
+		// Skip placement previews entirely
+		if (Defender->bIsPlacementPreview) continue;
 		
+		float Distance = FVector::Dist(Defender->GetActorLocation(), Location);
 		if (Distance < MinDistance)
 		{
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Too close to other defender"));
-			}
-			return false;
+			return false; // Too close to existing defender
 		}
-	}
-	
-	if (GEngine && DefenderCount == 0)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("No other defenders found"));
 	}
 
 	return true;
