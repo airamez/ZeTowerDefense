@@ -75,6 +75,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
 	float AttackRange = 1500.0f;
 
+	// Height above ground for spawning/placement
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
+	float SpawnHeight = 100.0f;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnUnitDestroyed OnUnitDestroyed;
 

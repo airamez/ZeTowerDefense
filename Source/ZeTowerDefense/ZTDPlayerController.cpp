@@ -404,9 +404,6 @@ bool AZTDPlayerController::TryPlaceUnit()
 	FVector Location = GetPlacementLocation();
 	if (!IsValidPlacement(Location)) return false;
 
-	// Adjust spawn height to prevent sinking through floor
-	Location.Z += 100.0f; // Spawn 100 units above ground to be safe
-
 	TSubclassOf<AZTDDefenderUnit> ClassToSpawn = (CurrentBuildType == EZTDBuildType::Tank) ? DefenderTankClass : DefenderHeliClass;
 	if (!ClassToSpawn) return false;
 
@@ -497,8 +494,23 @@ FVector AZTDPlayerController::GetPlacementLocation() const
 	if (HitResult.bBlockingHit)
 	{
 		FVector Location = HitResult.Location;
-		// Apply same height adjustment as used in TryPlaceUnit to keep preview above ground
-		Location.Z += 100.0f;
+		
+		// Get height adjustment from the defender unit class based on unit type
+		TSubclassOf<AZTDDefenderUnit> ClassToSpawn = (CurrentBuildType == EZTDBuildType::Tank) ? DefenderTankClass : DefenderHeliClass;
+		if (ClassToSpawn)
+		{
+			AZTDDefenderUnit* DefaultDefender = ClassToSpawn->GetDefaultObject<AZTDDefenderUnit>();
+			if (DefaultDefender)
+			{
+				Location.Z += DefaultDefender->SpawnHeight;
+			}
+		}
+		else
+		{
+			// Fallback to default height if class not available
+			Location.Z += 100.0f;
+		}
+		
 		return Location;
 	}
 
