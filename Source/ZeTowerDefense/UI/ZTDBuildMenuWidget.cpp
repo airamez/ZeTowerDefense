@@ -35,7 +35,7 @@ void UZTDBuildMenuWidget::NativeConstruct()
 	{
 		PSlot->SetAnchors(FAnchors(0.0f, 1.0f, 0.0f, 1.0f));
 		PSlot->SetAlignment(FVector2D(0.0f, 1.0f));
-		PSlot->SetSize(FVector2D(275.0f, 350.0f)); // Increased height to ensure buttons fit
+		PSlot->SetSize(FVector2D(275.0f, 400.0f)); // Balanced height for taller buttons
 		PSlot->SetPosition(FVector2D(20.0f, -20.0f));
 	}
 
@@ -45,7 +45,7 @@ void UZTDBuildMenuWidget::NativeConstruct()
 
 	// "Info" section header
 	UTextBlock* InfoHeader = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("InfoHeader"));
-	InfoHeader->SetText(FText::FromString(TEXT("Info")));
+	InfoHeader->SetText(FText::FromString(TEXT("INFO")));
 	InfoHeader->SetJustification(ETextJustify::Center);
 	InfoHeader->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 	VBox->AddChild(InfoHeader);
@@ -133,8 +133,11 @@ void UZTDBuildMenuWidget::NativeConstruct()
 		if (UVerticalBoxSlot* BSlot = Cast<UVerticalBoxSlot>(Btn->Slot))
 		{
 			BSlot->SetPadding(FMargin(1.0f)); // Reduced padding
-			// Set fixed width for all buttons
-			BSlot->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+			// Set fixed height for all buttons to ensure text fits
+			FSlateChildSize ButtonSize;
+			ButtonSize.SizeRule = ESlateSizeRule::Automatic;
+			ButtonSize.Value = 50.0f; // Fixed height of 50 units (increased from default ~37)
+			BSlot->SetSize(ButtonSize);
 		}
 		UTextBlock* Txt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), *(Name + TEXT("_Text")));
 		Txt->SetText(FText::FromString(Label));
@@ -145,7 +148,7 @@ void UZTDBuildMenuWidget::NativeConstruct()
 
 	// "Build" header text
 	UTextBlock* HeaderText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("HeaderText"));
-	HeaderText->SetText(FText::FromString(TEXT("Build")));
+	HeaderText->SetText(FText::FromString(TEXT("BUILD")));
 	HeaderText->SetJustification(ETextJustify::Center);
 	HeaderText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 	VBox->AddChild(HeaderText);
