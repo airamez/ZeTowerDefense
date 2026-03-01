@@ -48,10 +48,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
 	TSubclassOf<UZTDInstructionsWidget> InstructionsWidgetClass;
 
-	// Blueprint build menu widget class
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> BuildMenuBlueprintClass;
-
 	// Defender classes to build
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building")
 	TSubclassOf<AZTDDefenderUnit> DefenderTankClass;

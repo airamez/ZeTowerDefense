@@ -153,47 +153,7 @@ void AZTDHUD::DrawGameScreen()
 
 void AZTDHUD::DrawGameplayHUD()
 {
-	AZTDGameMode* GM = Cast<AZTDGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GM || !HUDFont) return;
-
-	// Draw dark background panel for HUD info
-	FVector2D PanelPos(ScreenWidth - 135.0f, 10.0f); // Top-right corner
-	FVector2D PanelSize(125.0f, 140.0f); // Reduced width by half
-	FLinearColor PanelColor(0.0f, 0.0f, 0.0f, 0.7f); // Dark semi-transparent
-	DrawBox(PanelPos, PanelSize, PanelColor);
-
-	// Consistent text color for all HUD elements
-	FLinearColor HUDTextColor(0.9f, 0.9f, 0.9f, 1.0f); // White
-	FLinearColor WarningColor(1.0f, 0.4f, 0.4f, 1.0f); // Red for low HP
-
-	// Draw base HP (closer spacing)
-	float BaseHP = GM->GetBaseHP();
-	FString HPText = FString::Printf(TEXT("Base HP: %.0f"), BaseHP);
-	FLinearColor HPColor = (BaseHP < 25.0f) ? WarningColor : HUDTextColor; // Warning when below 25 HP
-	DrawLeftAlignedText(HPText, ScreenWidth - 125.0f, 20.0f, HPColor, 1.2f);
-
-	// Draw points (closer spacing)
-	FString PointsText = FString::Printf(TEXT("Points: %d"), GM->GetPlayerPoints());
-	DrawLeftAlignedText(PointsText, ScreenWidth - 125.0f, 45.0f, HUDTextColor, 1.2f);
-
-	// Draw wave number (closer spacing)
-	FString WaveText = FString::Printf(TEXT("Wave: %d"), GM->CurrentWaveNumber);
-	DrawLeftAlignedText(WaveText, ScreenWidth - 125.0f, 70.0f, HUDTextColor, 1.2f);
-
-	// Draw enemy counters
-	if (GM->WaveSpawner)
-	{
-		int32 TotalTanks = GM->WaveSpawner->GetTankCountForWave(GM->CurrentWaveNumber);
-		int32 TotalHelis = GM->WaveSpawner->GetHeliCountForWave(GM->CurrentWaveNumber);
-		int32 TanksKilled = GM->WaveSpawner->GetTanksKilledThisWave();
-		int32 HelisKilled = GM->WaveSpawner->GetHelisKilledThisWave();
-
-		FString TankText = FString::Printf(TEXT("Tank: %d/%d"), TanksKilled, TotalTanks);
-		DrawLeftAlignedText(TankText, ScreenWidth - 125.0f, 95.0f, HUDTextColor, 1.2f);
-
-		FString HeliText = FString::Printf(TEXT("Heli: %d/%d"), HelisKilled, TotalHelis);
-		DrawLeftAlignedText(HeliText, ScreenWidth - 125.0f, 120.0f, HUDTextColor, 1.2f);
-	}
+	// HUD info moved to Build Menu widget - no longer drawn here
 }
 
 void AZTDHUD::DrawCrosshair()

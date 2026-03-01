@@ -32,18 +32,6 @@ AZTDPlayerController::AZTDPlayerController()
 	WavePauseWidgetClass = UZTDWavePauseWidget::StaticClass();
 	InstructionsWidgetClass = UZTDInstructionsWidget::StaticClass();
 
-	// Try to find Blueprint build menu widget
-	static ConstructorHelpers::FClassFinder<UUserWidget> BuildMenuBPClassFinder(TEXT("/Game/WBP_BuildMenu"));
-	if (BuildMenuBPClassFinder.Succeeded())
-	{
-		BuildMenuBlueprintClass = BuildMenuBPClassFinder.Class;
-		UE_LOG(LogTemp, Warning, TEXT("Found Blueprint WBP_BuildMenu class in constructor"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Blueprint WBP_BuildMenu not found in constructor"));
-	}
-
 	// Set defender classes programmatically
 	static ConstructorHelpers::FClassFinder<AZTDDefenderUnit> TankClassFinder(TEXT("/Game/Blueprints/BP_DefenderTank"));
 	if (TankClassFinder.Succeeded())
@@ -56,8 +44,12 @@ AZTDPlayerController::AZTDPlayerController()
 	if (HeliClassFinder.Succeeded())
 	{
 		DefenderHeliClass = HeliClassFinder.Class;
+		UE_LOG(LogTemp, Warning, TEXT("Found BP_DefenderHeli class"));
 	}
-	else {}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BP_DefenderHeli not found"));
+	}
 }
 
 void AZTDPlayerController::BeginPlay()
@@ -285,12 +277,10 @@ void AZTDPlayerController::ShowBuildMenu()
 		return;
 	}
 
-	// Use Blueprint class if available, otherwise fall back to programmatic
-	TSubclassOf<UUserWidget> WidgetClassToUse = BuildMenuBlueprintClass ? BuildMenuBlueprintClass : BuildMenuWidgetClass;
-	
-	if (WidgetClassToUse && !BuildMenuWidget)
+	// Use programmatic build menu widget
+	if (BuildMenuWidgetClass && !BuildMenuWidget)
 	{
-		BuildMenuWidget = CreateWidget<UUserWidget>(this, WidgetClassToUse);
+		BuildMenuWidget = CreateWidget<UUserWidget>(this, BuildMenuWidgetClass);
 		UE_LOG(LogTemp, Warning, TEXT("BuildMenuWidget created"));
 	}
 
@@ -322,7 +312,7 @@ void AZTDPlayerController::ShowBuildMenu()
 				{
 					if (BuildMenuWidget && !bFirstUnitPlaced) // Check flag again
 					{
-						BuildMenuWidget->RemoveFromViewport();
+						BuildMenuWidget->RemoveFromParent();
 						BuildMenuWidget->AddToViewport(9999);
 						BuildMenuWidget->SetVisibility(ESlateVisibility::Visible);
 						UE_LOG(LogTemp, Warning, TEXT("Retry: Re-added BuildMenuWidget to viewport"));
@@ -469,10 +459,14 @@ bool AZTDPlayerController::IsValidPlacement(const FVector& Location) const
 
 	bool bHitFloor = GetWorld()->LineTraceSingleByChannel(FloorHit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 	
-	if (!bHitFloor) return false;
+	if (!bHitFloor) 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Invalid placement: No floor"));
+		return false;
+	}
 
 	// Check for overlapping defenders - exclude placement preview
-	float MinDistance = 300.0f; // Increased significantly to prevent overlapping
+	float MinDistance = 150.0f; // Reduced from 300 to allow reasonable spacing
 	
 	for (TActorIterator<AZTDDefenderUnit> It(GetWorld()); It; ++It)
 	{
@@ -487,6 +481,7 @@ bool AZTDPlayerController::IsValidPlacement(const FVector& Location) const
 		float Distance = FVector::Dist(Defender->GetActorLocation(), Location);
 		if (Distance < MinDistance)
 		{
+			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Invalid placement: Too close to another unit"));
 			return false; // Too close to existing defender
 		}
 	}
