@@ -158,7 +158,7 @@ void AZTDHUD::DrawGameplayHUD()
 
 	// Draw dark background panel for HUD info
 	FVector2D PanelPos(10.0f, 10.0f);
-	FVector2D PanelSize(250.0f, 140.0f); // Increased height for enemy counters
+	FVector2D PanelSize(125.0f, 140.0f); // Reduced width by half
 	FLinearColor PanelColor(0.0f, 0.0f, 0.0f, 0.7f); // Dark semi-transparent
 	DrawBox(PanelPos, PanelSize, PanelColor);
 
@@ -170,15 +170,15 @@ void AZTDHUD::DrawGameplayHUD()
 	float BaseHP = GM->GetBaseHP();
 	FString HPText = FString::Printf(TEXT("Base HP: %.0f"), BaseHP);
 	FLinearColor HPColor = (BaseHP < 25.0f) ? WarningColor : HUDTextColor; // Warning when below 25 HP
-	DrawLeftAlignedText(HPText, 20.0f, 20.0f, HPColor, 1.0f);
+	DrawLeftAlignedText(HPText, 20.0f, 20.0f, HPColor, 1.2f);
 
 	// Draw points (closer spacing)
 	FString PointsText = FString::Printf(TEXT("Points: %d"), GM->GetPlayerPoints());
-	DrawLeftAlignedText(PointsText, 20.0f, 45.0f, HUDTextColor, 1.0f);
+	DrawLeftAlignedText(PointsText, 20.0f, 45.0f, HUDTextColor, 1.2f);
 
 	// Draw wave number (closer spacing)
 	FString WaveText = FString::Printf(TEXT("Wave: %d"), GM->CurrentWaveNumber);
-	DrawLeftAlignedText(WaveText, 20.0f, 70.0f, HUDTextColor, 1.0f);
+	DrawLeftAlignedText(WaveText, 20.0f, 70.0f, HUDTextColor, 1.2f);
 
 	// Draw enemy counters
 	if (GM->WaveSpawner)
@@ -189,10 +189,10 @@ void AZTDHUD::DrawGameplayHUD()
 		int32 HelisKilled = GM->WaveSpawner->GetHelisKilledThisWave();
 
 		FString TankText = FString::Printf(TEXT("Tank: %d/%d"), TanksKilled, TotalTanks);
-		DrawLeftAlignedText(TankText, 20.0f, 95.0f, HUDTextColor, 1.0f);
+		DrawLeftAlignedText(TankText, 20.0f, 95.0f, HUDTextColor, 1.2f);
 
 		FString HeliText = FString::Printf(TEXT("Heli: %d/%d"), HelisKilled, TotalHelis);
-		DrawLeftAlignedText(HeliText, 20.0f, 120.0f, HUDTextColor, 1.0f);
+		DrawLeftAlignedText(HeliText, 20.0f, 120.0f, HUDTextColor, 1.2f);
 	}
 }
 
